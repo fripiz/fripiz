@@ -3,170 +3,137 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Fripiz – Achète et vends sans prise de tête</title>
+  <title>Fripiz</title>
+  <script src="https://unpkg.com/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
-
-    body {
-      font-family: 'Segoe UI', sans-serif;
-      background: #F7F5F2;
-      color: #1A1A1A;
-    }
-
+    body { font-family: 'Segoe UI', sans-serif; background: #F7F5F2; color: #1A1A1A; }
     header {
-      background: white;
-      padding: 16px 20px;
-      display: flex;
-      align-items: center;
+      background: white; padding: 16px 20px;
+      display: flex; align-items: center;
       justify-content: space-between;
       border-bottom: 1px solid #eee;
-      position: sticky;
-      top: 0;
+      position: sticky; top: 0; z-index: 100;
     }
     .logo { font-size: 24px; font-weight: 700; color: #FF5C35; }
     .logo span { color: #1A1A1A; }
     .btn-connexion {
-      background: none;
-      border: 1.5px solid #FF5C35;
-      color: #FF5C35;
-      padding: 8px 18px;
-      border-radius: 20px;
-      font-size: 14px;
-      cursor: pointer;
-      font-weight: 500;
+      background: none; border: 1.5px solid #FF5C35;
+      color: #FF5C35; padding: 8px 18px;
+      border-radius: 20px; font-size: 14px; cursor: pointer;
     }
-
-    .hero {
-      text-align: center;
-      padding: 60px 20px 40px;
-    }
-    .hero h1 {
-      font-size: 32px;
-      font-weight: 700;
-      margin-bottom: 12px;
-      line-height: 1.3;
-    }
+    .hero { text-align: center; padding: 40px 20px 30px; }
+    .hero h1 { font-size: 28px; font-weight: 700; margin-bottom: 10px; line-height: 1.3; }
     .hero h1 span { color: #FF5C35; }
-    .hero p {
-      font-size: 16px;
-      color: #666;
-      margin-bottom: 28px;
-    }
+    .hero p { font-size: 15px; color: #666; margin-bottom: 20px; }
     .btn-vendre {
-      background: #FF5C35;
-      color: white;
-      border: none;
-      padding: 16px 36px;
-      border-radius: 30px;
-      font-size: 16px;
-      font-weight: 600;
-      cursor: pointer;
+      background: #FF5C35; color: white; border: none;
+      padding: 14px 32px; border-radius: 30px;
+      font-size: 15px; font-weight: 600; cursor: pointer;
     }
-
-    .search { padding: 0 20px 30px; }
+    .search { padding: 0 20px 20px; }
     .search input {
-      width: 100%;
-      padding: 14px 20px;
-      border-radius: 14px;
-      border: 1px solid #ddd;
-      font-size: 15px;
-      background: white;
-      outline: none;
+      width: 100%; padding: 12px 20px;
+      border-radius: 14px; border: 1px solid #ddd;
+      font-size: 15px; background: white; outline: none;
     }
-
     .categories {
-      display: flex;
-      gap: 10px;
-      overflow-x: auto;
-      padding: 0 20px 20px;
-      scrollbar-width: none;
+      display: flex; gap: 10px; overflow-x: auto;
+      padding: 0 20px 16px; scrollbar-width: none;
     }
     .categories::-webkit-scrollbar { display: none; }
     .cat {
-      background: white;
-      border: 1px solid #ddd;
-      border-radius: 20px;
-      padding: 8px 16px;
-      font-size: 13px;
-      cursor: pointer;
-      white-space: nowrap;
+      background: white; border: 1px solid #ddd;
+      border-radius: 20px; padding: 8px 16px;
+      font-size: 13px; cursor: pointer; white-space: nowrap;
     }
     .cat.active { background: #FF5C35; color: white; border-color: #FF5C35; }
-
-    .section-title {
-      font-size: 18px;
-      font-weight: 700;
-      padding: 0 20px 12px;
-    }
+    .section-title { font-size: 18px; font-weight: 700; padding: 0 20px 12px; }
     .grille {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 12px;
-      padding: 0 12px 100px;
+      display: grid; grid-template-columns: repeat(2, 1fr);
+      gap: 12px; padding: 0 12px 100px;
     }
     .article {
-      background: white;
-      border-radius: 14px;
-      overflow: hidden;
-      border: 1px solid #eee;
-      cursor: pointer;
+      background: white; border-radius: 14px;
+      overflow: hidden; border: 1px solid #eee; cursor: pointer;
     }
     .article-img {
-      width: 100%;
-      aspect-ratio: 1;
-      background: #F0EDE8;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 52px;
+      width: 100%; aspect-ratio: 1; background: #F0EDE8;
+      display: flex; align-items: center;
+      justify-content: center; font-size: 52px;
     }
     .article-info { padding: 10px 12px; }
     .article-nom { font-size: 13px; font-weight: 600; margin-bottom: 2px; }
     .article-taille { font-size: 11px; color: #999; margin-bottom: 6px; }
     .article-prix { font-size: 16px; font-weight: 700; }
-
+    .loading { text-align: center; padding: 40px; color: #999; font-size: 14px; }
+    .modal-overlay {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,0.4); z-index: 200;
+      align-items: flex-end; justify-content: center;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal {
+      background: white; border-radius: 20px 20px 0 0;
+      width: 100%; max-width: 500px;
+      padding: 20px 20px 40px;
+    }
+    .modal-handle {
+      width: 36px; height: 4px; background: #E0E0E0;
+      border-radius: 2px; margin: 0 auto 16px;
+    }
+    .modal-title { font-size: 18px; font-weight: 700; margin-bottom: 16px; }
+    .form-group { margin-bottom: 12px; }
+    .form-label { font-size: 12px; color: #999; margin-bottom: 4px; display: block; }
+    .form-input {
+      width: 100%; border: 1px solid #ddd; border-radius: 10px;
+      padding: 10px 12px; font-size: 14px; outline: none;
+      font-family: 'Segoe UI', sans-serif;
+    }
+    .form-input:focus { border-color: #FF5C35; }
+    .form-row { display: flex; gap: 8px; }
+    .form-row .form-group { flex: 1; }
+    .form-select {
+      width: 100%; border: 1px solid #ddd; border-radius: 10px;
+      padding: 10px 12px; font-size: 14px; background: white; outline: none;
+    }
+    .btn-publier {
+      width: 100%; background: #FF5C35; color: white;
+      border: none; border-radius: 12px; padding: 14px;
+      font-size: 15px; font-weight: 600; cursor: pointer; margin-top: 6px;
+    }
+    .toast {
+      position: fixed; bottom: 90px; left: 50%;
+      transform: translateX(-50%);
+      background: #1A1A1A; color: white;
+      padding: 10px 20px; border-radius: 20px;
+      font-size: 13px; display: none; z-index: 300;
+      white-space: nowrap;
+    }
+    .toast.show { display: block; }
     .bottom-nav {
-      position: fixed;
-      bottom: 0; left: 0; right: 0;
-      background: white;
-      border-top: 1px solid #eee;
-      display: flex;
-      padding: 10px 0 20px;
+      position: fixed; bottom: 0; left: 0; right: 0;
+      background: white; border-top: 1px solid #eee;
+      display: flex; padding: 10px 0 20px;
     }
     .nav-item {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 3px;
-      background: none;
-      border: none;
-      font-size: 10px;
-      color: #999;
-      cursor: pointer;
+      flex: 1; display: flex; flex-direction: column;
+      align-items: center; gap: 3px;
+      background: none; border: none;
+      font-size: 10px; color: #999; cursor: pointer;
     }
     .nav-item.active { color: #FF5C35; }
     .nav-icon { font-size: 22px; }
     .nav-vendre {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 3px;
-      background: none;
-      border: none;
-      cursor: pointer;
+      flex: 1; display: flex; flex-direction: column;
+      align-items: center; gap: 3px;
+      background: none; border: none; cursor: pointer;
     }
     .nav-vendre .cercle {
-      width: 48px; height: 48px;
-      background: #FF5C35;
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 26px;
-      color: white;
-      margin-top: -18px;
+      width: 48px; height: 48px; background: #FF5C35;
+      border-radius: 50%; display: flex;
+      align-items: center; justify-content: center;
+      font-size: 26px; color: white; margin-top: -18px;
     }
     .nav-vendre span { font-size: 10px; color: #FF5C35; font-weight: 600; }
   </style>
@@ -181,103 +148,206 @@
   <div class="hero">
     <h1>Achète & vends<br><span>sans prise de tête</span></h1>
     <p>Vêtements, bibelots, chaussures...<br>Publie en 30 secondes.</p>
-    <button class="btn-vendre">Vendre un article</button>
+    <button class="btn-vendre" onclick="ouvrirModal()">Vendre un article</button>
   </div>
 
   <div class="search">
-    <input type="text" placeholder="🔍  Rechercher un article..." />
+    <input type="text" placeholder="🔍  Rechercher un article..."
+      oninput="rechercherAnnonces(this.value)" />
   </div>
 
   <div class="categories">
-    <button class="cat active" onclick="filtrer(this)">Tout</button>
-    <button class="cat" onclick="filtrer(this)">Femme</button>
-    <button class="cat" onclick="filtrer(this)">Homme</button>
-    <button class="cat" onclick="filtrer(this)">Enfant</button>
-    <button class="cat" onclick="filtrer(this)">Bibelots</button>
-    <button class="cat" onclick="filtrer(this)">Sport</button>
-    <button class="cat" onclick="filtrer(this)">Chaussures</button>
+    <button class="cat active" onclick="filtrer(this, 'tout')">Tout</button>
+    <button class="cat" onclick="filtrer(this, 'Femme')">Femme</button>
+    <button class="cat" onclick="filtrer(this, 'Homme')">Homme</button>
+    <button class="cat" onclick="filtrer(this, 'Enfant')">Enfant</button>
+    <button class="cat" onclick="filtrer(this, 'Bibelots')">Bibelots</button>
+    <button class="cat" onclick="filtrer(this, 'Sport')">Sport</button>
+    <button class="cat" onclick="filtrer(this, 'Chaussures')">Chaussures</button>
   </div>
 
   <div class="section-title">Articles récents</div>
-  <div class="grille">
-    <div class="article">
-      <div class="article-img">🧥</div>
-      <div class="article-info">
-        <div class="article-nom">Manteau camel</div>
-        <div class="article-taille">Zara · Taille M</div>
-        <div class="article-prix">34 €</div>
+  <div class="grille" id="grille">
+    <div class="loading">Chargement...</div>
+  </div>
+
+  <div class="modal-overlay" id="modal" onclick="fermerModal(event)">
+    <div class="modal">
+      <div class="modal-handle"></div>
+      <div class="modal-title">Publier une annonce</div>
+      <div class="form-group">
+        <label class="form-label">Titre</label>
+        <input class="form-input" id="titre" placeholder="Ex : Veste en jean taille M" />
       </div>
-    </div>
-    <div class="article">
-      <div class="article-img">👟</div>
-      <div class="article-info">
-        <div class="article-nom">Air Force 1</div>
-        <div class="article-taille">Nike · Taille 42</div>
-        <div class="article-prix">45 €</div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Prix (€)</label>
+          <input class="form-input" id="prix" type="number" placeholder="0" />
+        </div>
+        <div class="form-group">
+          <label class="form-label">Catégorie</label>
+          <select class="form-select" id="categorie">
+            <option>Femme</option>
+            <option>Homme</option>
+            <option>Enfant</option>
+            <option>Bibelots</option>
+            <option>Sport</option>
+            <option>Chaussures</option>
+          </select>
+        </div>
       </div>
-    </div>
-    <div class="article">
-      <div class="article-img">👗</div>
-      <div class="article-info">
-        <div class="article-nom">Robe fleurie</div>
-        <div class="article-taille">H&M · Taille S</div>
-        <div class="article-prix">12 €</div>
+      <div class="form-group">
+        <label class="form-label">Description</label>
+        <textarea class="form-input" id="description" rows="3"
+          placeholder="Décrivez votre article..."></textarea>
       </div>
-    </div>
-    <div class="article">
-      <div class="article-img">🏺</div>
-      <div class="article-info">
-        <div class="article-nom">Vase céramique</div>
-        <div class="article-taille">Artisanat · Déco</div>
-        <div class="article-prix">18 €</div>
+      <div class="form-group">
+        <label class="form-label">Ton prénom</label>
+        <input class="form-input" id="vendeur" placeholder="Ex : Jules" />
       </div>
-    </div>
-    <div class="article">
-      <div class="article-img">🧣</div>
-      <div class="article-info">
-        <div class="article-nom">Écharpe laine</div>
-        <div class="article-taille">Mango · TU</div>
-        <div class="article-prix">9 €</div>
-      </div>
-    </div>
-    <div class="article">
-      <div class="article-img">🎿</div>
-      <div class="article-info">
-        <div class="article-nom">Veste de ski</div>
-        <div class="article-taille">Quechua · Taille L</div>
-        <div class="article-prix">29 €</div>
-      </div>
+      <button class="btn-publier" onclick="publierAnnonce()">Publier gratuitement →</button>
     </div>
   </div>
 
+  <div class="toast" id="toast"></div>
+
   <nav class="bottom-nav">
     <button class="nav-item active">
-      <span class="nav-icon">🏠</span>
-      <span>Accueil</span>
+      <span class="nav-icon">🏠</span><span>Accueil</span>
     </button>
     <button class="nav-item">
-      <span class="nav-icon">🔍</span>
-      <span>Explorer</span>
+      <span class="nav-icon">🔍</span><span>Explorer</span>
     </button>
-    <button class="nav-vendre">
+    <button class="nav-vendre" onclick="ouvrirModal()">
       <div class="cercle">＋</div>
       <span>Vendre</span>
     </button>
     <button class="nav-item">
-      <span class="nav-icon">❤️</span>
-      <span>Favoris</span>
+      <span class="nav-icon">❤️</span><span>Favoris</span>
     </button>
     <button class="nav-item">
-      <span class="nav-icon">👤</span>
-      <span>Profil</span>
+      <span class="nav-icon">👤</span><span>Profil</span>
     </button>
   </nav>
 
   <script>
-    function filtrer(el) {
-      document.querySelectorAll('.cat').forEach(c => c.classList.remove('active'));
-      el.classList.add('active');
+    const SUPABASE_URL = 'https://milpcxrfvufgqyukjyep.supabase.co'
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1pbHBjeHJmdnVmZ3F5dWtqeWVwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY2ODk3NzgsImV4cCI6MjA5MjI2NTc3OH0.TUh3kxzmjlQX38naPqQvJ6hpyNzPbi1fUoILuXKDZ9Q'
+    const { createClient } = supabase
+    const db = createClient(SUPABASE_URL, SUPABASE_KEY)
+
+    const emojis = {
+      'Femme': '👗', 'Homme': '👔', 'Enfant': '🧒',
+      'Bibelots': '🏺', 'Sport': '⚽', 'Chaussures': '👟'
     }
+
+    let toutesLesAnnonces = []
+
+    async function chargerAnnonces() {
+      const { data, error } = await db
+        .from('Annonces')
+        .select('*')
+        .order('created_at', { ascending: false })
+
+      if (error) {
+        console.error('Erreur:', error)
+        document.getElementById('grille').innerHTML =
+          '<div class="loading">Erreur de chargement 😕</div>'
+        return
+      }
+
+      toutesLesAnnonces = data
+      afficherAnnonces(data)
+    }
+
+    function afficherAnnonces(Annonces) {
+      const grille = document.getElementById('grille')
+      if (Annonces.length === 0) {
+        grille.innerHTML = '<div class="loading">Aucune annonce pour le moment.<br>Sois le premier à vendre ! 🎉</div>'
+        return
+      }
+      grille.innerHTML = Annonces.map(a => `
+        <div class="article">
+          <div class="article-img">${a.emoji || emojis[a.categorie] || '📦'}</div>
+          <div class="article-info">
+            <div class="article-nom">${a.titre}</div>
+            <div class="article-taille">${a.vendeur} · ${a.categorie}</div>
+            <div class="article-prix">${a.prix} €</div>
+          </div>
+        </div>
+      `).join('')
+    }
+
+    function filtrer(el, cat) {
+      document.querySelectorAll('.cat').forEach(c => c.classList.remove('active'))
+      el.classList.add('active')
+      const filtrees = cat === 'tout'
+        ? toutesLesAnnonces
+        : toutesLesAnnonces.filter(a => a.categorie === cat)
+      afficherAnnonces(filtrees)
+    }
+
+    function rechercherAnnonces(q) {
+      const filtrees = toutesLesAnnonces.filter(a =>
+        a.titre.toLowerCase().includes(q.toLowerCase())
+      )
+      afficherAnnonces(filtrees)
+    }
+
+    async function publierAnnonce() {
+      const titre = document.getElementById('titre').value.trim()
+      const prix = document.getElementById('prix').value
+      const categorie = document.getElementById('categorie').value
+      const description = document.getElementById('description').value.trim()
+      const vendeur = document.getElementById('vendeur').value.trim()
+
+      if (!titre || !prix || !vendeur) {
+        afficherToast('⚠️ Remplis le titre, le prix et ton prénom !')
+        return
+      }
+
+      const { error } = await db.from('Annonces').insert([{
+        titre,
+        prix: parseFloat(prix),
+        categorie,
+        description,
+        vendeur,
+        emoji: emojis[categorie]
+      }])
+
+      if (error) {
+        console.error('Erreur insert:', error)
+        afficherToast('❌ Erreur lors de la publication')
+        return
+      }
+
+      afficherToast('✅ Annonce publiée !')
+      document.getElementById('modal').classList.remove('open')
+      document.getElementById('titre').value = ''
+      document.getElementById('prix').value = ''
+      document.getElementById('description').value = ''
+      document.getElementById('vendeur').value = ''
+      chargerAnnonces()
+    }
+
+    function ouvrirModal() {
+      document.getElementById('modal').classList.add('open')
+    }
+
+    function fermerModal(e) {
+      if (e.target === document.getElementById('modal')) {
+        document.getElementById('modal').classList.remove('open')
+      }
+    }
+
+    function afficherToast(msg) {
+      const t = document.getElementById('toast')
+      t.textContent = msg
+      t.className = 'toast show'
+      setTimeout(() => t.className = 'toast', 2600)
+    }
+
+    chargerAnnonces()
   </script>
 
 </body>
