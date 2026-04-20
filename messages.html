@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fripiz – Messages</title>
+  <script src="https://unpkg.com/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Segoe UI', sans-serif; background: #F7F5F2; color: #1A1A1A; }
+    header {
+      background: white; padding: 16px 20px;
+      display: flex; align-items: center;
+      gap: 12px; border-bottom: 1px solid #eee;
+      position: sticky; top: 0; z-index: 100;
+    }
+    .btn-retour {
+      background: none; border: none;
+      font-size: 22px; cursor: pointer;
+    }
+    .logo { font-size: 20px; font-weight: 700; color: #FF5C35; }
+    .logo span { color: #1A1A1A; }
+    .page-title {
+      font-size: 16px; font-weight: 700;
+      flex: 1; text-align: center;
+    }
+
+    /* ── LISTE DES CONVERSATIONS ── */
+    #vue-liste { display: block; }
+    #vue-chat { display: none; }
+
+    .conv-list { padding: 12px; padding-bottom: 100px; }
+    .conv-item {
+      background: white; border-radius: 14px;
+      padding: 14px 16px; margin-bottom: 10px;
+      border: 1px solid #eee; cursor: pointer;
+      display: flex; align-items: center; gap: 12px;
+    }
+    .conv-avatar {
+      width: 46px; height: 46px; border-radius: 50%;
+      background: #FF5C35; color: white;
+      display: flex; align-items: center;
+      justify-content: center; font-size: 18px;
+      font-weight: 700; flex-shrink: 0;
+    }
+    .conv-info { flex: 1; min-width: 0; }
+    .conv-nom { font-size: 14px; font-weight: 600; margin-bottom: 2px; }
+    .conv-dernier {
+      font-size: 12px; color: #999;
+      white-space: nowrap; overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .conv-time { font-size: 11px; color: #bbb; flex-shrink: 0; }
+
+    .empty-state {
+      text-align: center; padding: 60px 20px;
+      color: #999; font-size: 14px; line-height: 2;
+    }
+    .empty-icon { font-size: 48px; margin-bottom: 12px; }
+
+    /* ── CHAT ── */
+    .chat-header {
+      background: white; padding: 14px 16px;
+      border-bottom: 1px solid #eee;
+      display: flex; align-items: center; gap: 12px;
+    }
+    .chat-nom { font-size: 15px; font-weight: 700; }
+    .chat-annonce { font-size: 12px; color: #999; }
+
+    .chat-messages {
+      padding: 16px; padding-bottom: 80px;
+      display: flex; flex-direction: column; gap: 10px;
+      min-height: calc(100vh - 200px);
+    }
+    .msg {
+      max-width: 75%; padding: 10px 14px;
+      border-radius: 18px; font-size: 14px; line-height: 1.4;
+    }
+    .msg-recu {
+      background: white; border: 1px solid #eee;
+      border-radius: 18px 18px 18px 4px;
+      align-self: flex-start;
+    }
+    .msg-envoye {
+      background: #FF5C35; color: white;
+      border-radius: 18px 18px 4px 18px;
+      align-self: flex-end;
+    }
+    .msg-time {
+      font-size: 10px; opacity: 0.6;
+      margin-top: 4px; display: block;
+    }
+    .msg-annonce-ref {
+      background: #FFF0ED; border: 1px solid #FFD5C8;
+      border-radius: 10px; padding: 8px 12px;
+      font-size: 12px; color: #FF5C35;
+      margin-bottom: 8px; align-self: center;
+      text-align: center;
+    }
+
+    .chat-input-bar {
+      position: fixed; bottom: 0; left: 0; right: 0;
+      background: white; border-top: 1px solid #eee;
+      padding: 10px 16px 24px;
+      display: flex; gap: 10px; align-items: center;
+    }
+    .chat-input {
+      flex: 1; border: 1.5px solid #eee;
+      border-radius: 24px; padding: 10px 16px;
+      font-size: 14px; outline: none;
+      font-family: 'Segoe UI', sans-serif;
+    }
+    .chat-input:focus { border-color: #FF5C35; }
+    .btn-envoyer {
+      width: 42px; height: 42px;
+      background: #FF5C35; color: white;
+      border: none; border-radius: 50%;
+      font-size: 18px; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .bottom-nav {
+      position: fixed; bottom: 0; left: 0; right: 0;
+      background: white; border-top: 1px solid #eee;
+      display: flex; padding: 10px 0 20px;
+    }
+    .nav-item {
+      flex: 1; display: flex; flex-direction: column;
+      align-items: center; gap: 3px;
+      background: none; border: none;
+      font-size: 10px; color: #999; cursor: pointer;
+    }
+    .nav-item.active { color: #FF5C35; }
+    .nav-icon { font-size: 22px; }
+    .nav-vendre {
+      flex: 1; display: flex; flex-direction: column;
+      align-items: center; gap: 3px;
+      background: none; border: none; cursor: pointer;
+    }
+    .nav-vendre .cercle {
+      width: 48px; height: 48px; background: #FF5C35;
+      border-radius: 50%; display: flex;
+      align-items: center; justify-content: center;
+      font-size: 26px; color: white; margin-top: -18px;
+    }
+    .nav-vendre span { font-size: 10px; color: #FF5C35; font-weight: 600; }
+  </style>
+</head>
+<body>
+
+  <!-- VUE LISTE -->
+  <div id="vue-liste">
+    <header>
+      <button class="btn-retour" onclick="window.location.href='index.html'">←</button>
+      <div class="page-title">Messages</div>
+      <div style="width:32px"></div>
+    </header>
+    <div class="conv-list" id="conv-list">
+      <div class="empty-state">
+        <div class="empty-icon">💬</div>
+        Chargement...
+      </div>
+    </div>
+  </div>
+
+  <!-- VUE CHAT -->
+  <div id="vue-chat">
+    <header>
+      <button class="btn-retour" onclick="afficherListe()">←</button>
+      <div>
+        <div class="chat-nom" id="chat-nom"></div>
+        <div class="chat-annonce" id="chat-annonce"></div>
+      </div>
+    </header>
+    <div class="chat-messages" id="chat-messages"></div>
+    <div class="chat-input-bar">
+      <input class="chat-input" id="msg-input"
+        placeholder="Écrire un message..."
+        onkeypress="if(event.key==='Enter') envoyerMessage()" />
+      <button class="btn-envoyer" onclick="envoyerMessage()">➤</button>
+    </div>
+  </div>
+
+  <nav class="bottom-nav" id="bottom-nav">
+    <button class="nav-item" onclick="window.location.href='index.html'">
+      <span class="nav-icon">🏠</span><span>Accueil</span>
+    </button>
+    <button class="nav-item" >
+      <span class="nav-icon">🔍</span><span>Explorer</span>
+    </button>
+    <button class="nav-vendre" onclick="window.location.href='index.html'">
+      <div class="cercle">＋</div>
+      <span>Vendre</span>
+    </button>
+    <button class="nav-item active">
+      <span class="nav-icon">💬</span><span>Messages</span>
+    </button>
+    <button class="nav-item" onclick="window.location.href='profil.html'">
+      <span class="nav-icon">👤</span><span>Profil</span>
+    </button>
+  </nav>
+
+  <script>
+    const SUPABASE_URL = 'https://milpcxrfvufgqyukjyep.supabase.co'
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1pbHBjeHJmdnVmZ3F5dWtqeWVwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY2ODk3NzgsImV4cCI6MjA5MjI2NTc3OH0.TUh3kxzmjlQX38naPqQvJ6hpyNzPbi1fUoILuXKDZ9Q'
+    const { createClient } = supabase
+    const db = createClient(SUPABASE_URL, SUPABASE_KEY)
+
+    let monPrenom = 'Moi'
+    let convActive = null
+    let realtimeChannel = null
+
+    async function init() {
+      const { data: { user } } = await db.auth.getUser()
+      if (user) {
+        monPrenom = user.user_metadata?.prenom || 'Moi'
+      }
+      chargerConversations()
+    }
+
+    async function chargerConversations() {
+      const { data, error } = await db
+        .from('messages')
+        .select('*')
+        .or(`expediteur.eq.${monPrenom},destinataire.eq.${monPrenom}`)
+        .order('created_at', { ascending: false })
+
+      if (error || !data || data.length === 0) {
+        document.getElementById('conv-list').innerHTML = `
+          <div class="empty-state">
+            <div class="empty-icon">💬</div>
+            Pas encore de messages<br>
+            <small>Contacte un vendeur depuis une annonce !</small>
+          </div>`
+        return
+      }
+
+      const convMap = {}
+      data.forEach(msg => {
+        const autre = msg.expediteur === monPrenom ? msg.destinataire : msg.expediteur
+        if (!convMap[autre]) convMap[autre] = { ...msg, autre }
+      })
+
+      document.getElementById('conv-list').innerHTML = Object.values(convMap).map(c => `
+        <div class="conv-item" onclick="ouvrirChat('${c.autre}', '${c.annonce_titre || ''}', '${c.annonce_id || ''}')">
+          <div class="conv-avatar">${c.autre.charAt(0).toUpperCase()}</div>
+          <div class="conv-info">
+            <div class="conv-nom">${c.autre}</div>
+            <div class="conv-dernier">${c.contenu}</div>
+          </div>
+          <div class="conv-time">${new Date(c.created_at).toLocaleDateString('fr-FR')}</div>
+        </div>
+      `).join('')
+    }
+
+    async function ouvrirChat(autre, annoncetitre, annonceid) {
+      convActive = { autre, annoncetitre, annonceid }
+      document.getElementById('vue-liste').style.display = 'none'
+      document.getElementById('vue-chat').style.display = 'block'
+      document.getElementById('bottom-nav').style.display = 'none'
+      document.getElementById('chat-nom').textContent = autre
+      document.getElementById('chat-annonce').textContent = annoncetitre || ''
+      await chargerMessages()
+
+      if (realtimeChannel) realtimeChannel.unsubscribe()
+      realtimeChannel = db.channel('messages-' + autre)
+        .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'messages' },
+          () => chargerMessages())
+        .subscribe()
+    }
+
+    async function chargerMessages() {
+      const { data } = await db
+        .from('messages')
+        .select('*')
+        .or(`and(expediteur.eq.${monPrenom},destinataire.eq.${convActive.autre}),and(expediteur.eq.${convActive.autre},destinataire.eq.${monPrenom})`)
+        .order('created_at', { ascending: true })
+
+      const container = document.getElementById('chat-messages')
+      if (!data || data.length === 0) {
+        container.innerHTML = `
+          <div class="msg-annonce-ref">
+            💬 Début de la conversation<br>
+            <strong>${convActive.annoncetitre || ''}</strong>
+          </div>`
+        return
+      }
+
+      container.innerHTML = data.map(msg => `
+        <div class="msg ${msg.expediteur === monPrenom ? 'msg-envoye' : 'msg-recu'}">
+          ${msg.contenu}
+          <span class="msg-time">
+            ${new Date(msg.created_at).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' })}
+          </span>
+        </div>
+      `).join('')
+      container.scrollTop = container.scrollHeight
+    }
+
+    async function envoyerMessage() {
+      const input = document.getElementById('msg-input')
+      const contenu = input.value.trim()
+      if (!contenu) return
+      input.value = ''
+
+      await db.from('messages').insert([{
+        contenu,
+        expediteur: monPrenom,
+        destinataire: convActive.autre,
+        annonce_titre: convActive.annoncetitre || null
+      }])
+
+      chargerMessages()
+    }
+
+    function afficherListe() {
+      document.getElementById('vue-liste').style.display = 'block'
+      document.getElementById('vue-chat').style.display = 'none'
+      document.getElementById('bottom-nav').style.display = 'flex'
+      if (realtimeChannel) realtimeChannel.unsubscribe()
+      chargerConversations()
+    }
+
+    async function init() {
+      const { data: { user } } = await db.auth.getUser()
+      if (user) {
+        monPrenom = user.user_metadata?.prenom || 'Moi'
+      }
+
+      const params = new URLSearchParams(window.location.search)
+      const autre = params.get('autre')
+      const titre = params.get('titre')
+      const id = params.get('id')
+
+      if (autre) {
+        ouvrirChat(autre, titre, id)
+      } else {
+        chargerConversations()
+      }
+    }
+
+    async function init() {
+      const { data: { user } } = await db.auth.getUser()
+      if (user) {
+        monPrenom = user.user_metadata?.prenom || 'Moi'
+      }
+
+      const params = new URLSearchParams(window.location.search)
+      const autre = params.get('autre')
+      const titre = params.get('titre')
+      const id = params.get('id')
+
+      if (autre) {
+        ouvrirChat(autre, titre, id)
+      } else {
+        chargerConversations()
+      }
+    }
+
+    async function init() {
+      const { data: { user } } = await db.auth.getUser()
+      if (user) {
+        monPrenom = user.user_metadata?.prenom || 'Moi'
+      }
+
+      const params = new URLSearchParams(window.location.search)
+      const autre = params.get('autre')
+      const titre = params.get('titre')
+      const id = params.get('id')
+
+      if (autre) {
+        ouvrirChat(autre, titre, id)
+      } else {
+        chargerConversations()
+      }
+    }
+
+    async function init() {
+        const { data: { user } } = await db.auth.getUser()
+        if (user) {
+            monPrenom = user.user_metadata?.prenom || 'Moi'
+        }
+        const params = new URLSearchParams(window.location.search)
+        const autre = params.get('autre')
+        const titre = params.get('titre')
+        const id = params.get('id')
+
+        if (autre) {
+            ouvrirChat(autre, titre, id)
+        } else {
+            chargerConversation()
+        }
+    }
+
+    init()
+  </script>
+
+</body>
+</html>

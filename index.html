@@ -63,14 +63,18 @@
       justify-content: center; font-size: 52px;
       overflow: hidden;
     }
-    .article-img img {
-      width: 100%; height: 100%;
-      object-fit: cover;
-    }
+    .article-img img { width: 100%; height: 100%; object-fit: cover; }
     .article-info { padding: 10px 12px; }
     .article-nom { font-size: 13px; font-weight: 600; margin-bottom: 2px; }
     .article-taille { font-size: 11px; color: #999; margin-bottom: 6px; }
     .article-prix { font-size: 16px; font-weight: 700; }
+    .btn-contacter {
+      margin-top: 8px; width: 100%;
+      background: #FFF0ED; color: #FF5C35;
+      border: none; border-radius: 8px;
+      padding: 7px; font-size: 12px;
+      font-weight: 600; cursor: pointer;
+    }
     .loading { text-align: center; padding: 40px; color: #999; font-size: 14px; }
     .modal-overlay {
       display: none; position: fixed; inset: 0;
@@ -197,18 +201,17 @@
     <div class="modal">
       <div class="modal-handle"></div>
       <div class="modal-title">Publier une annonce</div>
-
       <div class="form-group">
         <label class="form-label">Photo de l'article</label>
-        <div class="upload-zone" id="upload-zone" onclick="document.getElementById('photo-input').click()">
+        <div class="upload-zone" id="upload-zone"
+          onclick="document.getElementById('photo-input').click()">
           <div class="upload-icon">📷</div>
           <div class="upload-text">Appuie pour ajouter une photo</div>
         </div>
-        <input type="file" id="photo-input" accept="image/*" style="display:none"
-          onchange="previsualiserPhoto(this)" />
+        <input type="file" id="photo-input" accept="image/*"
+          style="display:none" onchange="previsualiserPhoto(this)" />
         <div class="upload-progress" id="upload-progress">Upload en cours...</div>
       </div>
-
       <div class="form-group">
         <label class="form-label">Titre</label>
         <input class="form-input" id="titre" placeholder="Ex : Veste en jean taille M" />
@@ -251,8 +254,8 @@
     <button class="nav-item active">
       <span class="nav-icon">🏠</span><span>Accueil</span>
     </button>
-    <button class="nav-item">
-      <span class="nav-icon">🔍</span><span>Explorer</span>
+    <button class="nav-item" onclick="window.location.href='messages.html'">
+      <span class="nav-icon">💬</span><span>Messages</span>
     </button>
     <button class="nav-vendre" onclick="ouvrirModal()">
       <div class="cercle">＋</div>
@@ -261,7 +264,7 @@
     <button class="nav-item">
       <span class="nav-icon">❤️</span><span>Favoris</span>
     </button>
-    <button class="nav-item">
+    <button class="nav-item" onclick="window.location.href='profil.html'">
       <span class="nav-icon">👤</span><span>Profil</span>
     </button>
   </nav>
@@ -281,7 +284,6 @@
     }
 
     let toutesLesAnnonces = []
-    let photoUrl = null
 
     async function verifierConnexion() {
       const { data: { user } } = await db.auth.getUser()
@@ -331,9 +333,34 @@
             <div class="article-nom">${a.titre}</div>
             <div class="article-taille">${a.vendeur} · ${a.categorie}</div>
             <div class="article-prix">${a.prix} €</div>
+            <button class="btn-contacter"
+              onclick="contacterVendeur('${a.vendeur}', '${a.titre}', '${a.id}')">
+              💬 Contacter
+            </button>
           </div>
         </div>
       `).join('')
+    }
+
+    function contacterVendeur(vendeur, titre, id) {
+      const params = new URLSearchParams({ autre: vendeur, titre: titre, id: id })
+      window.location.href = 'messages.html?' + params.toString()
+    }
+
+    function filtrer(el, cat) {
+      document.querySelectorAll('.cat').forEach(c => c.classList.remove('active'))
+      el.classList.add('active')
+      const filtrees = cat === 'tout'
+        ? toutesLesAnnonces
+        : toutesLesAnnonces.filter(a => a.categorie === cat)
+      afficherAnnonces(filtrees)
+    }
+
+    function rechercherAnnonces(q) {
+      const filtrees = toutesLesAnnonces.filter(a =>
+        a.titre.toLowerCase().includes(q.toLowerCase())
+      )
+      afficherAnnonces(filtrees)
     }
 
     function previsualiserPhoto(input) {
@@ -364,22 +391,6 @@
       return data.secure_url
     }
 
-    function filtrer(el, cat) {
-      document.querySelectorAll('.cat').forEach(c => c.classList.remove('active'))
-      el.classList.add('active')
-      const filtrees = cat === 'tout'
-        ? toutesLesAnnonces
-        : toutesLesAnnonces.filter(a => a.categorie === cat)
-      afficherAnnonces(filtrees)
-    }
-
-    function rechercherAnnonces(q) {
-      const filtrees = toutesLesAnnonces.filter(a =>
-        a.titre.toLowerCase().includes(q.toLowerCase())
-      )
-      afficherAnnonces(filtrees)
-    }
-
     async function publierAnnonce() {
       const titre = document.getElementById('titre').value.trim()
       const prix = document.getElementById('prix').value
@@ -403,13 +414,8 @@
       }
 
       const { error } = await db.from('Annonces').insert([{
-        titre,
-        prix: parseFloat(prix),
-        categorie,
-        description,
-        vendeur,
-        emoji: emojis[categorie],
-        photo
+        titre, prix: parseFloat(prix), categorie,
+        description, vendeur, emoji: emojis[categorie], photo
       }])
 
       btn.disabled = false
