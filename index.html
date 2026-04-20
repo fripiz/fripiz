@@ -142,7 +142,7 @@
 
   <header>
     <div class="logo">Frip<span>iz</span></div>
-    <button class="btn-connexion">Se connecter</button>
+    <button class="btn-connexion" id="btn-auth" onclick="window.location.href='auth.html'">Se connecter</button>
   </header>
 
   <div class="hero">
@@ -243,6 +243,19 @@
 
     let toutesLesAnnonces = []
 
+    async function verifierConnexion() {
+      const { data: { user } } = await db.auth.getUser()
+      const btn = document.getElementById('btn-auth')
+      if (user) {
+        const prenom = user.user_metadata?.prenom || 'Mon compte'
+        btn.textContent = '👤 ' + prenom
+        btn.onclick = () => window.location.href = 'profil.html'
+      } else {
+        btn.textContent = 'Se connecter'
+        btn.onclick = () => window.location.href = 'auth.html'
+      }
+    }
+
     async function chargerAnnonces() {
       const { data, error } = await db
         .from('Annonces')
@@ -260,13 +273,13 @@
       afficherAnnonces(data)
     }
 
-    function afficherAnnonces(Annonces) {
+    function afficherAnnonces(annonces) {
       const grille = document.getElementById('grille')
-      if (Annonces.length === 0) {
+      if (annonces.length === 0) {
         grille.innerHTML = '<div class="loading">Aucune annonce pour le moment.<br>Sois le premier à vendre ! 🎉</div>'
         return
       }
-      grille.innerHTML = Annonces.map(a => `
+      grille.innerHTML = annonces.map(a => `
         <div class="article">
           <div class="article-img">${a.emoji || emojis[a.categorie] || '📦'}</div>
           <div class="article-info">
@@ -347,6 +360,7 @@
       setTimeout(() => t.className = 'toast', 2600)
     }
 
+    verifierConnexion()
     chargerAnnonces()
   </script>
 
