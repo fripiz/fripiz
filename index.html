@@ -61,6 +61,11 @@
       width: 100%; aspect-ratio: 1; background: #F0EDE8;
       display: flex; align-items: center;
       justify-content: center; font-size: 52px;
+      overflow: hidden;
+    }
+    .article-img img {
+      width: 100%; height: 100%;
+      object-fit: cover;
     }
     .article-info { padding: 10px 12px; }
     .article-nom { font-size: 13px; font-weight: 600; margin-bottom: 2px; }
@@ -77,6 +82,7 @@
       background: white; border-radius: 20px 20px 0 0;
       width: 100%; max-width: 500px;
       padding: 20px 20px 40px;
+      max-height: 90vh; overflow-y: auto;
     }
     .modal-handle {
       width: 36px; height: 4px; background: #E0E0E0;
@@ -97,11 +103,27 @@
       width: 100%; border: 1px solid #ddd; border-radius: 10px;
       padding: 10px 12px; font-size: 14px; background: white; outline: none;
     }
+    .upload-zone {
+      border: 2px dashed #ddd; border-radius: 12px;
+      padding: 24px; text-align: center;
+      cursor: pointer; transition: border-color 0.2s;
+      margin-bottom: 12px;
+    }
+    .upload-zone:hover { border-color: #FF5C35; }
+    .upload-zone.has-image { border-color: #FF5C35; padding: 0; overflow: hidden; }
+    .upload-zone img { width: 100%; height: 200px; object-fit: cover; border-radius: 10px; }
+    .upload-icon { font-size: 32px; margin-bottom: 8px; }
+    .upload-text { font-size: 13px; color: #999; }
+    .upload-progress {
+      display: none; text-align: center;
+      font-size: 13px; color: #FF5C35; margin-top: 8px;
+    }
     .btn-publier {
       width: 100%; background: #FF5C35; color: white;
       border: none; border-radius: 12px; padding: 14px;
       font-size: 15px; font-weight: 600; cursor: pointer; margin-top: 6px;
     }
+    .btn-publier:disabled { opacity: 0.6; cursor: not-allowed; }
     .toast {
       position: fixed; bottom: 90px; left: 50%;
       transform: translateX(-50%);
@@ -175,6 +197,18 @@
     <div class="modal">
       <div class="modal-handle"></div>
       <div class="modal-title">Publier une annonce</div>
+
+      <div class="form-group">
+        <label class="form-label">Photo de l'article</label>
+        <div class="upload-zone" id="upload-zone" onclick="document.getElementById('photo-input').click()">
+          <div class="upload-icon">📷</div>
+          <div class="upload-text">Appuie pour ajouter une photo</div>
+        </div>
+        <input type="file" id="photo-input" accept="image/*" style="display:none"
+          onchange="previsualiserPhoto(this)" />
+        <div class="upload-progress" id="upload-progress">Upload en cours...</div>
+      </div>
+
       <div class="form-group">
         <label class="form-label">Titre</label>
         <input class="form-input" id="titre" placeholder="Ex : Veste en jean taille M" />
@@ -205,7 +239,9 @@
         <label class="form-label">Ton prénom</label>
         <input class="form-input" id="vendeur" placeholder="Ex : Jules" />
       </div>
-      <button class="btn-publier" onclick="publierAnnonce()">Publier gratuitement →</button>
+      <button class="btn-publier" id="btn-publier" onclick="publierAnnonce()">
+        Publier gratuitement →
+      </button>
     </div>
   </div>
 
@@ -233,6 +269,9 @@
   <script>
     const SUPABASE_URL = 'https://milpcxrfvufgqyukjyep.supabase.co'
     const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1pbHBjeHJmdnVmZ3F5dWtqeWVwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY2ODk3NzgsImV4cCI6MjA5MjI2NTc3OH0.TUh3kxzmjlQX38naPqQvJ6hpyNzPbi1fUoILuXKDZ9Q'
+    const CLOUDINARY_CLOUD = 'doq5uvqor'
+    const CLOUDINARY_PRESET = 'fripiz'
+
     const { createClient } = supabase
     const db = createClient(SUPABASE_URL, SUPABASE_KEY)
 
@@ -242,6 +281,7 @@
     }
 
     let toutesLesAnnonces = []
+    let photoUrl = null
 
     async function verifierConnexion() {
       const { data: { user } } = await db.auth.getUser()
@@ -281,7 +321,12 @@
       }
       grille.innerHTML = annonces.map(a => `
         <div class="article">
-          <div class="article-img">${a.emoji || emojis[a.categorie] || '📦'}</div>
+          <div class="article-img">
+            ${a.photo
+              ? `<img src="${a.photo}" alt="${a.titre}" />`
+              : (a.emoji || emojis[a.categorie] || '📦')
+            }
+          </div>
           <div class="article-info">
             <div class="article-nom">${a.titre}</div>
             <div class="article-taille">${a.vendeur} · ${a.categorie}</div>
@@ -289,6 +334,34 @@
           </div>
         </div>
       `).join('')
+    }
+
+    function previsualiserPhoto(input) {
+      const file = input.files[0]
+      if (!file) return
+      const zone = document.getElementById('upload-zone')
+      const reader = new FileReader()
+      reader.onload = e => {
+        zone.innerHTML = `<img src="${e.target.result}" alt="preview" />`
+        zone.classList.add('has-image')
+      }
+      reader.readAsDataURL(file)
+    }
+
+    async function uploadPhoto(file) {
+      const formData = new FormData()
+      formData.append('file', file)
+      formData.append('upload_preset', CLOUDINARY_PRESET)
+      const progress = document.getElementById('upload-progress')
+      progress.style.display = 'block'
+      progress.textContent = 'Upload de la photo...'
+      const res = await fetch(
+        `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD}/image/upload`,
+        { method: 'POST', body: formData }
+      )
+      const data = await res.json()
+      progress.style.display = 'none'
+      return data.secure_url
     }
 
     function filtrer(el, cat) {
@@ -313,10 +386,20 @@
       const categorie = document.getElementById('categorie').value
       const description = document.getElementById('description').value.trim()
       const vendeur = document.getElementById('vendeur').value.trim()
+      const photoInput = document.getElementById('photo-input')
+      const btn = document.getElementById('btn-publier')
 
       if (!titre || !prix || !vendeur) {
         afficherToast('⚠️ Remplis le titre, le prix et ton prénom !')
         return
+      }
+
+      btn.disabled = true
+      btn.textContent = 'Publication...'
+
+      let photo = null
+      if (photoInput.files[0]) {
+        photo = await uploadPhoto(photoInput.files[0])
       }
 
       const { error } = await db.from('Annonces').insert([{
@@ -325,8 +408,12 @@
         categorie,
         description,
         vendeur,
-        emoji: emojis[categorie]
+        emoji: emojis[categorie],
+        photo
       }])
+
+      btn.disabled = false
+      btn.textContent = 'Publier gratuitement →'
 
       if (error) {
         console.error('Erreur insert:', error)
@@ -340,6 +427,10 @@
       document.getElementById('prix').value = ''
       document.getElementById('description').value = ''
       document.getElementById('vendeur').value = ''
+      document.getElementById('upload-zone').innerHTML =
+        '<div class="upload-icon">📷</div><div class="upload-text">Appuie pour ajouter une photo</div>'
+      document.getElementById('upload-zone').classList.remove('has-image')
+      photoInput.value = ''
       chargerAnnonces()
     }
 
