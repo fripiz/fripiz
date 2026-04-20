@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fripiz – Mon profil</title>
+  <script src="https://unpkg.com/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Segoe UI', sans-serif; background: #F7F5F2; color: #1A1A1A; }
+    header {
+      background: white; padding: 16px 20px;
+      display: flex; align-items: center;
+      gap: 12px; border-bottom: 1px solid #eee;
+      position: sticky; top: 0; z-index: 100;
+    }
+    .btn-retour { background: none; border: none; font-size: 22px; cursor: pointer; }
+    .page-title { font-size: 16px; font-weight: 700; flex: 1; text-align: center; }
+
+    .profil-header {
+      background: white; padding: 30px 20px;
+      text-align: center; border-bottom: 1px solid #eee;
+    }
+    .avatar {
+      width: 80px; height: 80px; border-radius: 50%;
+      background: #FF5C35; color: white;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 32px; font-weight: 700;
+      margin: 0 auto 12px;
+    }
+    .profil-nom { font-size: 22px; font-weight: 700; margin-bottom: 4px; }
+    .profil-email { font-size: 14px; color: #999; margin-bottom: 16px; }
+    .profil-stats {
+      display: flex; justify-content: center; gap: 32px;
+    }
+    .stat { text-align: center; }
+    .stat-num { font-size: 20px; font-weight: 700; color: #FF5C35; }
+    .stat-label { font-size: 12px; color: #999; }
+
+    .section { padding: 20px 16px; }
+    .section-title {
+      font-size: 16px; font-weight: 700;
+      margin-bottom: 12px;
+    }
+
+    .mes-annonces {
+      display: grid; grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+    }
+    .annonce-card {
+      background: white; border-radius: 12px;
+      overflow: hidden; border: 1px solid #eee;
+    }
+    .annonce-img {
+      width: 100%; aspect-ratio: 1;
+      background: #F0EDE8;
+      display: flex; align-items: center;
+      justify-content: center; font-size: 36px;
+      overflow: hidden;
+    }
+    .annonce-img img { width: 100%; height: 100%; object-fit: cover; }
+    .annonce-info { padding: 8px 10px; }
+    .annonce-nom { font-size: 12px; font-weight: 600; margin-bottom: 2px; }
+    .annonce-prix { font-size: 14px; font-weight: 700; color: #FF5C35; }
+    .btn-supprimer {
+      width: 100%; background: #FEE8E8; color: #C0392B;
+      border: none; border-radius: 0 0 12px 12px;
+      padding: 6px; font-size: 11px; font-weight: 600;
+      cursor: pointer;
+    }
+
+    .menu-liste { padding: 0 16px 100px; }
+    .menu-item {
+      background: white; border-radius: 12px;
+      padding: 16px; margin-bottom: 10px;
+      display: flex; align-items: center;
+      gap: 12px; cursor: pointer;
+      border: 1px solid #eee;
+    }
+    .menu-icon { font-size: 20px; }
+    .menu-label { font-size: 14px; font-weight: 500; flex: 1; }
+    .menu-arrow { color: #ccc; font-size: 16px; }
+    .menu-item.danger { color: #C0392B; }
+    .menu-item.danger .menu-label { color: #C0392B; }
+
+    .loading { text-align: center; padding: 40px; color: #999; font-size: 14px; }
+
+    .non-connecte {
+      text-align: center; padding: 60px 20px;
+    }
+    .non-connecte p { font-size: 15px; color: #999; margin-bottom: 20px; }
+    .btn-login {
+      background: #FF5C35; color: white; border: none;
+      padding: 14px 32px; border-radius: 30px;
+      font-size: 15px; font-weight: 600; cursor: pointer;
+    }
+
+    .bottom-nav {
+      position: fixed; bottom: 0; left: 0; right: 0;
+      background: white; border-top: 1px solid #eee;
+      display: flex; padding: 10px 0 20px;
+    }
+    .nav-item {
+      flex: 1; display: flex; flex-direction: column;
+      align-items: center; gap: 3px;
+      background: none; border: none;
+      font-size: 10px; color: #999; cursor: pointer;
+    }
+    .nav-item.active { color: #FF5C35; }
+    .nav-icon { font-size: 22px; }
+    .nav-vendre {
+      flex: 1; display: flex; flex-direction: column;
+      align-items: center; gap: 3px;
+      background: none; border: none; cursor: pointer;
+    }
+    .nav-vendre .cercle {
+      width: 48px; height: 48px; background: #FF5C35;
+      border-radius: 50%; display: flex;
+      align-items: center; justify-content: center;
+      font-size: 26px; color: white; margin-top: -18px;
+    }
+    .nav-vendre span { font-size: 10px; color: #FF5C35; font-weight: 600; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <button class="btn-retour" onclick="window.location.href='index.html'">←</button>
+    <div class="page-title">Mon profil</div>
+    <div style="width:32px"></div>
+  </header>
+
+  <div id="contenu">
+    <div class="loading">Chargement...</div>
+  </div>
+
+  <nav class="bottom-nav">
+    <button class="nav-item" onclick="window.location.href='index.html'">
+      <span class="nav-icon">🏠</span><span>Accueil</span>
+    </button>
+    <button class="nav-item" onclick="window.location.href='messages.html'">
+      <span class="nav-icon">💬</span><span>Messages</span>
+    </button>
+    <button class="nav-vendre" onclick="window.location.href='index.html'">
+      <div class="cercle">＋</div>
+      <span>Vendre</span>
+    </button>
+    <button class="nav-item">
+      <span class="nav-icon">❤️</span><span>Favoris</span>
+    </button>
+    <button class="nav-item active">
+      <span class="nav-icon">👤</span><span>Profil</span>
+    </button>
+  </nav>
+
+  <script>
+    const SUPABASE_URL = 'https://milpcxrfvufgqyukjyep.supabase.co'
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1pbHBjeHJmdnVmZ3F5dWtqeWVwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY2ODk3NzgsImV4cCI6MjA5MjI2NTc3OH0.TUh3kxzmjlQX38naPqQvJ6hpyNzPbi1fUoILuXKDZ9Q'
+    const { createClient } = supabase
+    const db = createClient(SUPABASE_URL, SUPABASE_KEY)
+
+    async function init() {
+      const { data: { user } } = await db.auth.getUser()
+
+      if (!user) {
+        document.getElementById('contenu').innerHTML = `
+          <div class="non-connecte">
+            <div style="font-size:64px;margin-bottom:16px;">👤</div>
+            <p>Connecte-toi pour accéder<br>à ton profil</p>
+            <button class="btn-login" onclick="window.location.href='auth.html'">
+              Se connecter
+            </button>
+          </div>`
+        return
+      }
+
+      const prenom = user.user_metadata?.prenom || 'Utilisateur'
+      const email = user.email
+
+      const { data: annonces } = await db
+        .from('Annonces')
+        .select('*')
+        .eq('vendeur', prenom)
+        .order('created_at', { ascending: false })
+
+      const mesAnnonces = annonces || []
+
+      document.getElementById('contenu').innerHTML = `
+        <div class="profil-header">
+          <div class="avatar">${prenom.charAt(0).toUpperCase()}</div>
+          <div class="profil-nom">${prenom}</div>
+          <div class="profil-email">${email}</div>
+          <div class="profil-stats">
+            <div class="stat">
+              <div class="stat-num">${mesAnnonces.length}</div>
+              <div class="stat-label">Annonces</div>
+            </div>
+            <div class="stat">
+              <div class="stat-num">0</div>
+              <div class="stat-label">Ventes</div>
+            </div>
+            <div class="stat">
+              <div class="stat-num">⭐ 5.0</div>
+              <div class="stat-label">Note</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="section-title">Mes annonces (${mesAnnonces.length})</div>
+          ${mesAnnonces.length === 0
+            ? '<div class="loading">Tu n\'as pas encore publié d\'annonce</div>'
+            : `<div class="mes-annonces">
+                ${mesAnnonces.map(a => `
+                  <div class="annonce-card">
+                    <div class="annonce-img">
+                      ${a.photo ? `<img src="${a.photo}" alt="${a.titre}" />` : (a.emoji || '📦')}
+                    </div>
+                    <div class="annonce-info">
+                      <div class="annonce-nom">${a.titre}</div>
+                      <div class="annonce-prix">${a.prix} €</div>
+                    </div>
+                    <button class="btn-supprimer" onclick="supprimerAnnonce('${a.id}')">
+                      🗑️ Supprimer
+                    </button>
+                  </div>
+                `).join('')}
+              </div>`
+          }
+        </div>
+
+        <div class="menu-liste">
+          <div class="menu-item" onclick="window.location.href='messages.html'">
+            <span class="menu-icon">💬</span>
+            <span class="menu-label">Mes messages</span>
+            <span class="menu-arrow">›</span>
+          </div>
+          <div class="menu-item danger" onclick="seDeconnecter()">
+            <span class="menu-icon">🚪</span>
+            <span class="menu-label">Se déconnecter</span>
+            <span class="menu-arrow">›</span>
+          </div>
+        </div>
+      `
+    }
+
+    async function supprimerAnnonce(id) {
+      if (!confirm('Supprimer cette annonce ?')) return
+      await db.from('Annonces').delete().eq('id', id)
+      init()
+    }
+
+    async function seDeconnecter() {
+      await db.auth.signOut()
+      window.location.href = 'index.html'
+    }
+
+    init()
+  </script>
+
+</body>
+</html>
