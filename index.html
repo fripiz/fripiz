@@ -55,15 +55,23 @@
     }
     .article {
       background: white; border-radius: 14px;
-      overflow: hidden; border: 1px solid #eee; cursor: pointer;
+      overflow: hidden; border: 1px solid #eee;
     }
     .article-img {
       width: 100%; aspect-ratio: 1; background: #F0EDE8;
       display: flex; align-items: center;
       justify-content: center; font-size: 52px;
-      overflow: hidden;
+      overflow: hidden; position: relative;
     }
     .article-img img { width: 100%; height: 100%; object-fit: cover; }
+    .btn-fav {
+      position: absolute; top: 8px; right: 8px;
+      background: rgba(255,255,255,0.9);
+      border: none; border-radius: 50%;
+      width: 32px; height: 32px; font-size: 16px;
+      cursor: pointer; display: flex;
+      align-items: center; justify-content: center;
+    }
     .article-info { padding: 10px 12px; }
     .article-nom { font-size: 13px; font-weight: 600; margin-bottom: 2px; }
     .article-taille { font-size: 11px; color: #999; margin-bottom: 6px; }
@@ -261,7 +269,7 @@
       <div class="cercle">＋</div>
       <span>Vendre</span>
     </button>
-    <button class="nav-item">
+    <button class="nav-item" onclick="window.location.href='favoris.html'">
       <span class="nav-icon">❤️</span><span>Favoris</span>
     </button>
     <button class="nav-item" onclick="window.location.href='profil.html'">
@@ -313,6 +321,7 @@
 
       toutesLesAnnonces = data
       afficherAnnonces(data)
+      chargerFavoris()
     }
 
     function afficherAnnonces(annonces) {
@@ -328,6 +337,10 @@
               ? `<img src="${a.photo}" alt="${a.titre}" />`
               : (a.emoji || emojis[a.categorie] || '📦')
             }
+            <button class="btn-fav" id="fav-${a.id}"
+              onclick="toggleFavori('${a.id}','${a.titre}','${a.prix}','${a.photo || ''}','${a.emoji || ''}','${a.vendeur}','${a.categorie}')">
+              🤍
+            </button>
           </div>
           <div class="article-info">
             <div class="article-nom">${a.titre}</div>
@@ -340,6 +353,53 @@
           </div>
         </div>
       `).join('')
+    }
+
+    async function chargerFavoris() {
+      const { data: { user } } = await db.auth.getUser()
+      if (!user) return
+      const prenom = user.user_metadata?.prenom || 'Moi'
+      const { data } = await db.from('favoris').select('annonce_id').eq('utilisateur', prenom)
+      if (data) {
+        data.forEach(f => {
+          const btn = document.getElementById('fav-' + f.annonce_id)
+          if (btn) btn.textContent = '❤️'
+        })
+      }
+    }
+
+    async function toggleFavori(id, titre, prix, photo, emoji, vendeur, categorie) {
+      const { data: { user } } = await db.auth.getUser()
+      if (!user) {
+        afficherToast('⚠️ Connecte-toi pour ajouter des favoris !')
+        return
+      }
+      const prenom = user.user_metadata?.prenom || 'Moi'
+      const btn = document.getElementById('fav-' + id)
+
+      const { data: existants } = await db.from('favoris')
+        .select('id')
+        .eq('utilisateur', prenom)
+        .eq('annonce_id', id)
+
+      if (existants && existants.length > 0) {
+        await db.from('favoris').delete().eq('id', existants[0].id)
+        btn.textContent = '🤍'
+        afficherToast('Retiré des favoris')
+      } else {
+        await db.from('favoris').insert([{
+          utilisateur: prenom,
+          annonce_id: id,
+          annonce_titre: titre,
+          annonce_prix: parseFloat(prix),
+          annonce_photo: photo || null,
+          annonce_emoji: emoji || null,
+          annonce_vendeur: vendeur,
+          annonce_categorie: categorie
+        }])
+        btn.textContent = '❤️'
+        afficherToast('❤️ Ajouté aux favoris !')
+      }
     }
 
     function contacterVendeur(vendeur, titre, id) {

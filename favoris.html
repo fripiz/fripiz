@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fripiz – Mes favoris</title>
+  <script src="https://unpkg.com/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Segoe UI', sans-serif; background: #F7F5F2; color: #1A1A1A; }
+    header {
+      background: white; padding: 16px 20px;
+      display: flex; align-items: center;
+      gap: 12px; border-bottom: 1px solid #eee;
+      position: sticky; top: 0; z-index: 100;
+    }
+    .btn-retour { background: none; border: none; font-size: 22px; cursor: pointer; }
+    .page-title { font-size: 16px; font-weight: 700; flex: 1; text-align: center; }
+    .grille {
+      display: grid; grid-template-columns: repeat(2, 1fr);
+      gap: 12px; padding: 16px 12px 100px;
+    }
+    .article {
+      background: white; border-radius: 14px;
+      overflow: hidden; border: 1px solid #eee;
+    }
+    .article-img {
+      width: 100%; aspect-ratio: 1; background: #F0EDE8;
+      display: flex; align-items: center;
+      justify-content: center; font-size: 52px;
+      overflow: hidden; position: relative;
+    }
+    .article-img img { width: 100%; height: 100%; object-fit: cover; }
+    .article-info { padding: 10px 12px; }
+    .article-nom { font-size: 13px; font-weight: 600; margin-bottom: 2px; }
+    .article-taille { font-size: 11px; color: #999; margin-bottom: 6px; }
+    .article-prix { font-size: 16px; font-weight: 700; }
+    .btn-retirer {
+      margin-top: 8px; width: 100%;
+      background: #FEE8E8; color: #C0392B;
+      border: none; border-radius: 8px;
+      padding: 7px; font-size: 12px;
+      font-weight: 600; cursor: pointer;
+    }
+    .btn-contacter {
+      margin-top: 6px; width: 100%;
+      background: #FFF0ED; color: #FF5C35;
+      border: none; border-radius: 8px;
+      padding: 7px; font-size: 12px;
+      font-weight: 600; cursor: pointer;
+    }
+    .empty-state {
+      text-align: center; padding: 60px 20px;
+      color: #999; font-size: 14px; line-height: 2;
+    }
+    .empty-icon { font-size: 48px; margin-bottom: 12px; }
+    .loading { text-align: center; padding: 40px; color: #999; font-size: 14px; }
+    .toast {
+      position: fixed; bottom: 90px; left: 50%;
+      transform: translateX(-50%);
+      background: #1A1A1A; color: white;
+      padding: 10px 20px; border-radius: 20px;
+      font-size: 13px; display: none; z-index: 300;
+      white-space: nowrap;
+    }
+    .toast.show { display: block; }
+    .bottom-nav {
+      position: fixed; bottom: 0; left: 0; right: 0;
+      background: white; border-top: 1px solid #eee;
+      display: flex; padding: 10px 0 20px;
+    }
+    .nav-item {
+      flex: 1; display: flex; flex-direction: column;
+      align-items: center; gap: 3px;
+      background: none; border: none;
+      font-size: 10px; color: #999; cursor: pointer;
+    }
+    .nav-item.active { color: #FF5C35; }
+    .nav-icon { font-size: 22px; }
+    .nav-vendre {
+      flex: 1; display: flex; flex-direction: column;
+      align-items: center; gap: 3px;
+      background: none; border: none; cursor: pointer;
+    }
+    .nav-vendre .cercle {
+      width: 48px; height: 48px; background: #FF5C35;
+      border-radius: 50%; display: flex;
+      align-items: center; justify-content: center;
+      font-size: 26px; color: white; margin-top: -18px;
+    }
+    .nav-vendre span { font-size: 10px; color: #FF5C35; font-weight: 600; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <button class="btn-retour" onclick="window.location.href='index.html'">←</button>
+    <div class="page-title">❤️ Mes favoris</div>
+    <div style="width:32px"></div>
+  </header>
+
+  <div id="contenu">
+    <div class="loading">Chargement...</div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <nav class="bottom-nav">
+    <button class="nav-item" onclick="window.location.href='index.html'">
+      <span class="nav-icon">🏠</span><span>Accueil</span>
+    </button>
+    <button class="nav-item" onclick="window.location.href='messages.html'">
+      <span class="nav-icon">💬</span><span>Messages</span>
+    </button>
+    <button class="nav-vendre" onclick="window.location.href='index.html'">
+      <div class="cercle">＋</div>
+      <span>Vendre</span>
+    </button>
+    <button class="nav-item active">
+      <span class="nav-icon">❤️</span><span>Favoris</span>
+    </button>
+    <button class="nav-item" onclick="window.location.href='profil.html'">
+      <span class="nav-icon">👤</span><span>Profil</span>
+    </button>
+  </nav>
+
+  <script>
+    const SUPABASE_URL = 'https://milpcxrfvufgqyukjyep.supabase.co'
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1pbHBjeHJmdnVmZ3F5dWtqeWVwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY2ODk3NzgsImV4cCI6MjA5MjI2NTc3OH0.TUh3kxzmjlQX38naPqQvJ6hpyNzPbi1fUoILuXKDZ9Q'
+    const { createClient } = supabase
+    const db = createClient(SUPABASE_URL, SUPABASE_KEY)
+
+    async function init() {
+      const { data: { user } } = await db.auth.getUser()
+
+      if (!user) {
+        document.getElementById('contenu').innerHTML = `
+          <div class="empty-state">
+            <div class="empty-icon">❤️</div>
+            Connecte-toi pour voir<br>tes articles favoris
+            <br><br>
+            <button onclick="window.location.href='auth.html'"
+              style="background:#FF5C35;color:white;border:none;
+              padding:12px 28px;border-radius:20px;font-size:14px;
+              font-weight:600;cursor:pointer;">
+              Se connecter
+            </button>
+          </div>`
+        return
+      }
+
+      const prenom = user.user_metadata?.prenom || 'Moi'
+      const { data, error } = await db
+        .from('favoris')
+        .select('*')
+        .eq('utilisateur', prenom)
+        .order('created_at', { ascending: false })
+
+      if (!data || data.length === 0) {
+        document.getElementById('contenu').innerHTML = `
+          <div class="empty-state">
+            <div class="empty-icon">🤍</div>
+            Pas encore de favoris<br>
+            <small>Appuie sur ❤️ sur une annonce pour la sauvegarder !</small>
+          </div>`
+        return
+      }
+
+      document.getElementById('contenu').innerHTML = `
+        <div class="grille">
+          ${data.map(f => `
+            <div class="article" id="card-${f.id}">
+              <div class="article-img">
+                ${f.annonce_photo
+                  ? `<img src="${f.annonce_photo}" alt="${f.annonce_titre}" />`
+                  : (f.annonce_emoji || '📦')
+                }
+              </div>
+              <div class="article-info">
+                <div class="article-nom">${f.annonce_titre}</div>
+                <div class="article-taille">${f.annonce_vendeur} · ${f.annonce_categorie}</div>
+                <div class="article-prix">${f.annonce_prix} €</div>
+                <button class="btn-contacter"
+                  onclick="contacter('${f.annonce_vendeur}','${f.annonce_titre}','${f.annonce_id}')">
+                  💬 Contacter
+                </button>
+                <button class="btn-retirer" onclick="retirerFavori('${f.id}')">
+                  🗑️ Retirer
+                </button>
+              </div>
+            </div>
+          `).join('')}
+        </div>`
+    }
+
+    async function retirerFavori(id) {
+      await db.from('favoris').delete().eq('id', id)
+      document.getElementById('card-' + id)?.remove()
+      afficherToast('Retiré des favoris')
+    }
+
+    function contacter(vendeur, titre, id) {
+      const params = new URLSearchParams({ autre: vendeur, titre, id })
+      window.location.href = 'messages.html?' + params.toString()
+    }
+
+    function afficherToast(msg) {
+      const t = document.getElementById('toast')
+      t.textContent = msg
+      t.className = 'toast show'
+      setTimeout(() => t.className = 'toast', 2600)
+    }
+
+    init()
+  </script>
+
+</body>
+</html>
