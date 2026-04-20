@@ -331,7 +331,7 @@
         return
       }
       grille.innerHTML = annonces.map(a => `
-        <div class="article">
+        <div class="article" onclick="window.location.href='annonce.html?id=${a.id}'">
           <div class="article-img">
             ${a.photo
               ? `<img src="${a.photo}" alt="${a.titre}" />`
