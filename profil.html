@@ -16,7 +16,6 @@
     }
     .btn-retour { background: none; border: none; font-size: 22px; cursor: pointer; }
     .page-title { font-size: 16px; font-weight: 700; flex: 1; text-align: center; }
-
     .profil-header {
       background: white; padding: 30px 20px;
       text-align: center; border-bottom: 1px solid #eee;
@@ -30,33 +29,23 @@
     }
     .profil-nom { font-size: 22px; font-weight: 700; margin-bottom: 4px; }
     .profil-email { font-size: 14px; color: #999; margin-bottom: 16px; }
-    .profil-stats {
-      display: flex; justify-content: center; gap: 32px;
-    }
+    .profil-stats { display: flex; justify-content: center; gap: 32px; }
     .stat { text-align: center; }
     .stat-num { font-size: 20px; font-weight: 700; color: #FF5C35; }
     .stat-label { font-size: 12px; color: #999; }
-
     .section { padding: 20px 16px; }
-    .section-title {
-      font-size: 16px; font-weight: 700;
-      margin-bottom: 12px;
-    }
-
+    .section-title { font-size: 16px; font-weight: 700; margin-bottom: 12px; }
     .mes-annonces {
-      display: grid; grid-template-columns: repeat(2, 1fr);
-      gap: 10px;
+      display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px;
     }
     .annonce-card {
       background: white; border-radius: 12px;
       overflow: hidden; border: 1px solid #eee;
     }
     .annonce-img {
-      width: 100%; aspect-ratio: 1;
-      background: #F0EDE8;
+      width: 100%; aspect-ratio: 1; background: #F0EDE8;
       display: flex; align-items: center;
-      justify-content: center; font-size: 36px;
-      overflow: hidden;
+      justify-content: center; font-size: 36px; overflow: hidden;
     }
     .annonce-img img { width: 100%; height: 100%; object-fit: cover; }
     .annonce-info { padding: 8px 10px; }
@@ -65,36 +54,27 @@
     .btn-supprimer {
       width: 100%; background: #FEE8E8; color: #C0392B;
       border: none; border-radius: 0 0 12px 12px;
-      padding: 6px; font-size: 11px; font-weight: 600;
-      cursor: pointer;
+      padding: 6px; font-size: 11px; font-weight: 600; cursor: pointer;
     }
-
     .menu-liste { padding: 0 16px 100px; }
     .menu-item {
       background: white; border-radius: 12px;
       padding: 16px; margin-bottom: 10px;
       display: flex; align-items: center;
-      gap: 12px; cursor: pointer;
-      border: 1px solid #eee;
+      gap: 12px; cursor: pointer; border: 1px solid #eee;
     }
     .menu-icon { font-size: 20px; }
     .menu-label { font-size: 14px; font-weight: 500; flex: 1; }
     .menu-arrow { color: #ccc; font-size: 16px; }
-    .menu-item.danger { color: #C0392B; }
     .menu-item.danger .menu-label { color: #C0392B; }
-
     .loading { text-align: center; padding: 40px; color: #999; font-size: 14px; }
-
-    .non-connecte {
-      text-align: center; padding: 60px 20px;
-    }
+    .non-connecte { text-align: center; padding: 60px 20px; }
     .non-connecte p { font-size: 15px; color: #999; margin-bottom: 20px; }
     .btn-login {
       background: #FF5C35; color: white; border: none;
       padding: 14px 32px; border-radius: 30px;
       font-size: 15px; font-weight: 600; cursor: pointer;
     }
-
     .bottom-nav {
       position: fixed; bottom: 0; left: 0; right: 0;
       background: white; border-top: 1px solid #eee;
@@ -145,7 +125,7 @@
       <div class="cercle">＋</div>
       <span>Vendre</span>
     </button>
-    <button class="nav-item">
+    <button class="nav-item" onclick="window.location.href='favoris.html'">
       <span class="nav-icon">❤️</span><span>Favoris</span>
     </button>
     <button class="nav-item active">
@@ -183,7 +163,22 @@
         .eq('vendeur', prenom)
         .order('created_at', { ascending: false })
 
+      const { data: ventes } = await db
+        .from('transactions')
+        .select('id')
+        .eq('vendeur', prenom)
+
+      const { data: notes } = await db
+        .from('transactions')
+        .select('note_acheteur')
+        .eq('vendeur', prenom)
+        .not('note_acheteur', 'is', null)
+
       const mesAnnonces = annonces || []
+      const nbVentes = ventes?.length || 0
+      const moyenneNote = notes?.length
+        ? (notes.reduce((s, n) => s + n.note_acheteur, 0) / notes.length).toFixed(1)
+        : '—'
 
       document.getElementById('contenu').innerHTML = `
         <div class="profil-header">
@@ -196,11 +191,11 @@
               <div class="stat-label">Annonces</div>
             </div>
             <div class="stat">
-              <div class="stat-num">0</div>
+              <div class="stat-num">${nbVentes}</div>
               <div class="stat-label">Ventes</div>
             </div>
             <div class="stat">
-              <div class="stat-num">⭐ 5.0</div>
+              <div class="stat-num">⭐ ${moyenneNote}</div>
               <div class="stat-label">Note</div>
             </div>
           </div>
@@ -230,9 +225,24 @@
         </div>
 
         <div class="menu-liste">
+          <div class="menu-item" onclick="window.location.href='transactions.html'">
+            <span class="menu-icon">📦</span>
+            <span class="menu-label">Mes achats & ventes</span>
+            <span class="menu-arrow">›</span>
+          </div>
           <div class="menu-item" onclick="window.location.href='messages.html'">
             <span class="menu-icon">💬</span>
             <span class="menu-label">Mes messages</span>
+            <span class="menu-arrow">›</span>
+          </div>
+          <div class="menu-item" onclick="window.location.href='favoris.html'">
+            <span class="menu-icon">❤️</span>
+            <span class="menu-label">Mes favoris</span>
+            <span class="menu-arrow">›</span>
+          </div>
+          <div class="menu-item" onclick="window.location.href='cgu.html'">
+            <span class="menu-icon">⚖️</span>
+            <span class="menu-label">Mentions légales & CGU</span>
             <span class="menu-arrow">›</span>
           </div>
           <div class="menu-item danger" onclick="seDeconnecter()">

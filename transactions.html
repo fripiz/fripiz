@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fripiz – Mes achats & ventes</title>
+  <script src="https://unpkg.com/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Segoe UI', sans-serif; background: #F7F5F2; color: #1A1A1A; }
+    header {
+      background: white; padding: 16px 20px;
+      display: flex; align-items: center;
+      gap: 12px; border-bottom: 1px solid #eee;
+      position: sticky; top: 0; z-index: 100;
+    }
+    .btn-retour { background: none; border: none; font-size: 22px; cursor: pointer; }
+    .page-title { font-size: 16px; font-weight: 700; flex: 1; text-align: center; }
+
+    .tabs {
+      display: flex; background: white;
+      border-bottom: 1px solid #eee;
+    }
+    .tab {
+      flex: 1; padding: 14px;
+      background: none; border: none;
+      border-bottom: 3px solid transparent;
+      font-size: 13px; font-weight: 600;
+      color: #999; cursor: pointer;
+      font-family: 'Segoe UI', sans-serif;
+    }
+    .tab.active { color: #FF5C35; border-bottom-color: #FF5C35; }
+
+    .contenu { padding: 16px 16px 100px; }
+
+    .transaction-card {
+      background: white; border-radius: 14px;
+      border: 1px solid #eee; margin-bottom: 12px;
+      overflow: hidden;
+    }
+    .card-header {
+      display: flex; align-items: center;
+      gap: 12px; padding: 14px 16px;
+    }
+    .card-img {
+      width: 60px; height: 60px;
+      border-radius: 10px; background: #F0EDE8;
+      display: flex; align-items: center;
+      justify-content: center; font-size: 28px;
+      overflow: hidden; flex-shrink: 0;
+    }
+    .card-img img { width: 100%; height: 100%; object-fit: cover; }
+    .card-info { flex: 1; }
+    .card-titre { font-size: 14px; font-weight: 600; margin-bottom: 2px; }
+    .card-meta { font-size: 12px; color: #999; margin-bottom: 4px; }
+    .card-prix { font-size: 16px; font-weight: 700; color: #FF5C35; }
+    .card-statut {
+      font-size: 11px; padding: 4px 10px;
+      border-radius: 20px; font-weight: 600;
+      flex-shrink: 0;
+    }
+    .statut-encours { background: #FFF4E5; color: #9A5C00; }
+    .statut-livre { background: #E8F8EE; color: #1A7A40; }
+    .statut-litige { background: #FEE8E8; color: #C0392B; }
+    .statut-termine { background: #F0F0F0; color: #555; }
+
+    .card-actions {
+      border-top: 1px solid #eee;
+      padding: 12px 16px;
+      display: flex; gap: 8px;
+    }
+    .btn-action {
+      flex: 1; padding: 10px;
+      border-radius: 10px; border: none;
+      font-size: 12px; font-weight: 600;
+      cursor: pointer; font-family: 'Segoe UI', sans-serif;
+    }
+    .btn-noter { background: #FFF0ED; color: #FF5C35; }
+    .btn-litige { background: #FEE8E8; color: #C0392B; }
+    .btn-message { background: #F0F0F0; color: #555; }
+
+    .note-display {
+      display: flex; align-items: center; gap: 4px;
+      font-size: 13px; margin-top: 4px;
+    }
+    .etoile { color: #F4C430; font-size: 16px; }
+    .etoile.vide { color: #ddd; }
+
+    .empty-state {
+      text-align: center; padding: 60px 20px;
+      color: #999; font-size: 14px; line-height: 2;
+    }
+    .empty-icon { font-size: 48px; margin-bottom: 12px; }
+    .loading { text-align: center; padding: 40px; color: #999; }
+
+    /* MODALS */
+    .modal-overlay {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,0.4); z-index: 200;
+      align-items: flex-end; justify-content: center;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal {
+      background: white; border-radius: 20px 20px 0 0;
+      width: 100%; max-width: 500px;
+      padding: 20px 20px 40px;
+    }
+    .modal-handle {
+      width: 36px; height: 4px; background: #E0E0E0;
+      border-radius: 2px; margin: 0 auto 16px;
+    }
+    .modal-title { font-size: 18px; font-weight: 700; margin-bottom: 6px; }
+    .modal-sub { font-size: 13px; color: #999; margin-bottom: 20px; }
+
+    .etoiles-select {
+      display: flex; gap: 8px; justify-content: center;
+      margin-bottom: 20px;
+    }
+    .etoile-btn {
+      font-size: 36px; background: none;
+      border: none; cursor: pointer;
+      transition: transform 0.1s;
+      filter: grayscale(1);
+    }
+    .etoile-btn.selected { filter: grayscale(0); transform: scale(1.1); }
+
+    .form-group { margin-bottom: 14px; }
+    .form-label { font-size: 12px; color: #999; margin-bottom: 6px; display: block; }
+    .form-input {
+      width: 100%; border: 1.5px solid #eee;
+      border-radius: 12px; padding: 12px 16px;
+      font-size: 14px; outline: none;
+      font-family: 'Segoe UI', sans-serif;
+    }
+    .form-input:focus { border-color: #FF5C35; }
+    .btn-submit {
+      width: 100%; background: #FF5C35; color: white;
+      border: none; border-radius: 12px; padding: 14px;
+      font-size: 15px; font-weight: 600;
+      cursor: pointer; margin-top: 4px;
+      font-family: 'Segoe UI', sans-serif;
+    }
+    .btn-submit:disabled { opacity: 0.6; }
+    .btn-submit.danger { background: #C0392B; }
+
+    .toast {
+      position: fixed; bottom: 90px; left: 50%;
+      transform: translateX(-50%);
+      background: #1A1A1A; color: white;
+      padding: 10px 20px; border-radius: 20px;
+      font-size: 13px; display: none; z-index: 300;
+      white-space: nowrap;
+    }
+    .toast.show { display: block; }
+
+    .bottom-nav {
+      position: fixed; bottom: 0; left: 0; right: 0;
+      background: white; border-top: 1px solid #eee;
+      display: flex; padding: 10px 0 20px;
+    }
+    .nav-item {
+      flex: 1; display: flex; flex-direction: column;
+      align-items: center; gap: 3px;
+      background: none; border: none;
+      font-size: 10px; color: #999; cursor: pointer;
+    }
+    .nav-item.active { color: #FF5C35; }
+    .nav-icon { font-size: 22px; }
+    .nav-vendre {
+      flex: 1; display: flex; flex-direction: column;
+      align-items: center; gap: 3px;
+      background: none; border: none; cursor: pointer;
+    }
+    .nav-vendre .cercle {
+      width: 48px; height: 48px; background: #FF5C35;
+      border-radius: 50%; display: flex;
+      align-items: center; justify-content: center;
+      font-size: 26px; color: white; margin-top: -18px;
+    }
+    .nav-vendre span { font-size: 10px; color: #FF5C35; font-weight: 600; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <button class="btn-retour" onclick="window.location.href='index.html'">←</button>
+    <div class="page-title">Mes achats & ventes</div>
+    <div style="width:32px"></div>
+  </header>
+
+  <div class="tabs">
+    <button class="tab active" id="tab-achats" onclick="afficherOnglet('achats')">🛍️ Mes achats</button>
+    <button class="tab" id="tab-ventes" onclick="afficherOnglet('ventes')">💰 Mes ventes</button>
+  </div>
+
+  <div class="contenu" id="contenu">
+    <div class="loading">Chargement...</div>
+  </div>
+
+  <!-- MODAL NOTE -->
+  <div class="modal-overlay" id="modal-note" onclick="fermerModal(event,'modal-note')">
+    <div class="modal">
+      <div class="modal-handle"></div>
+      <div class="modal-title">Noter la transaction</div>
+      <div class="modal-sub" id="note-sub"></div>
+      <div class="etoiles-select" id="etoiles">
+        <button class="etoile-btn" onclick="selectionnerNote(1)">⭐</button>
+        <button class="etoile-btn" onclick="selectionnerNote(2)">⭐</button>
+        <button class="etoile-btn" onclick="selectionnerNote(3)">⭐</button>
+        <button class="etoile-btn" onclick="selectionnerNote(4)">⭐</button>
+        <button class="etoile-btn" onclick="selectionnerNote(5)">⭐</button>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Commentaire (optionnel)</label>
+        <textarea class="form-input" id="note-commentaire" rows="3"
+          placeholder="Partagez votre expérience..."></textarea>
+      </div>
+      <button class="btn-submit" id="btn-noter" onclick="soumettreNote()">
+        Valider ma note →
+      </button>
+    </div>
+  </div>
+
+  <!-- MODAL LITIGE -->
+  <div class="modal-overlay" id="modal-litige" onclick="fermerModal(event,'modal-litige')">
+    <div class="modal">
+      <div class="modal-handle"></div>
+      <div class="modal-title">Ouvrir un litige</div>
+      <div class="modal-sub">Décris le problème rencontré avec cette transaction</div>
+      <div class="form-group">
+        <label class="form-label">Raison du litige</label>
+        <select class="form-input" id="litige-raison-select">
+          <option value="">Choisir une raison...</option>
+          <option value="Article non reçu">Article non reçu</option>
+          <option value="Article non conforme">Article non conforme à l'annonce</option>
+          <option value="Article endommagé">Article endommagé à la réception</option>
+          <option value="Contrefaçon suspectée">Contrefaçon suspectée</option>
+          <option value="Vendeur non réactif">Vendeur non réactif</option>
+          <option value="Autre">Autre problème</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Description détaillée</label>
+        <textarea class="form-input" id="litige-description" rows="4"
+          placeholder="Explique en détail ce qui s'est passé..."></textarea>
+      </div>
+      <button class="btn-submit danger" onclick="soumettrelitige()">
+        🚨 Ouvrir le litige
+      </button>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <nav class="bottom-nav">
+    <button class="nav-item" onclick="window.location.href='index.html'">
+      <span class="nav-icon">🏠</span><span>Accueil</span>
+    </button>
+    <button class="nav-item" onclick="window.location.href='messages.html'">
+      <span class="nav-icon">💬</span><span>Messages</span>
+    </button>
+    <button class="nav-vendre" onclick="window.location.href='index.html'">
+      <div class="cercle">＋</div>
+      <span>Vendre</span>
+    </button>
+    <button class="nav-item" onclick="window.location.href='favoris.html'">
+      <span class="nav-icon">❤️</span><span>Favoris</span>
+    </button>
+    <button class="nav-item active" onclick="window.location.href='profil.html'">
+      <span class="nav-icon">👤</span><span>Profil</span>
+    </button>
+  </nav>
+
+  <script>
+    const SUPABASE_URL = 'https://milpcxrfvufgqyukjyep.supabase.co'
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1pbHBjeHJmdnVmZ3F5dWtqeWVwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY2ODk3NzgsImV4cCI6MjA5MjI2NTc3OH0.TUh3kxzmjlQX38naPqQvJ6hpyNzPbi1fUoILuXKDZ9Q'
+    const { createClient } = supabase
+    const db = createClient(SUPABASE_URL, SUPABASE_KEY)
+
+    let monPrenom = null
+    let ongletActif = 'achats'
+    let transactionActive = null
+    let noteSelectionnee = 0
+
+    async function init() {
+      const { data: { user } } = await db.auth.getUser()
+      if (!user) {
+        window.location.href = 'auth.html'
+        return
+      }
+      monPrenom = user.user_metadata?.prenom || 'Moi'
+      chargerTransactions()
+    }
+
+    async function chargerTransactions() {
+      const contenu = document.getElementById('contenu')
+      contenu.innerHTML = '<div class="loading">Chargement...</div>'
+
+      const champ = ongletActif === 'achats' ? 'acheteur' : 'vendeur'
+      const { data, error } = await db
+        .from('transactions')
+        .select('*')
+        .eq(champ, monPrenom)
+        .order('created_at', { ascending: false })
+
+      if (error || !data || data.length === 0) {
+        contenu.innerHTML = `
+          <div class="empty-state">
+            <div class="empty-icon">${ongletActif === 'achats' ? '🛍️' : '💰'}</div>
+            ${ongletActif === 'achats'
+              ? 'Pas encore d\'achat<br><small>Explore les annonces et fais ton premier achat !</small>'
+              : 'Pas encore de vente<br><small>Publie des annonces pour commencer à vendre !</small>'
+            }
+          </div>`
+        return
+      }
+
+      contenu.innerHTML = data.map(t => `
+        <div class="transaction-card">
+          <div class="card-header">
+            <div class="card-img">
+              ${t.annonce_photo
+                ? `<img src="${t.annonce_photo}" alt="${t.annonce_titre}" />`
+                : (t.annonce_emoji || '📦')
+              }
+            </div>
+            <div class="card-info">
+              <div class="card-titre">${t.annonce_titre}</div>
+              <div class="card-meta">
+                ${ongletActif === 'achats' ? `Vendu par ${t.vendeur}` : `Acheté par ${t.acheteur}`}
+                · ${new Date(t.created_at).toLocaleDateString('fr-FR')}
+              </div>
+              <div class="card-prix">${t.prix} €</div>
+              ${t.note_acheteur ? `
+                <div class="note-display">
+                  ${[1,2,3,4,5].map(i =>
+                    `<span class="etoile${i <= t.note_acheteur ? '' : ' vide'}">★</span>`
+                  ).join('')}
+                  <span style="font-size:12px;color:#999;margin-left:4px;">${t.commentaire_acheteur || ''}</span>
+                </div>` : ''
+              }
+            </div>
+            <span class="card-statut ${
+              t.litige_ouvert ? 'statut-litige' :
+              t.note_acheteur ? 'statut-termine' :
+              t.statut === 'livre' ? 'statut-livre' : 'statut-encours'
+            }">
+              ${t.litige_ouvert ? '🚨 Litige' :
+                t.note_acheteur ? '✅ Terminé' :
+                t.statut === 'livre' ? '📦 Livré' : '⏳ En cours'}
+            </span>
+          </div>
+
+          <div class="card-actions">
+            ${ongletActif === 'achats' && !t.note_acheteur && !t.litige_ouvert ? `
+              <button class="btn-action btn-noter"
+                onclick="ouvrirNote('${t.id}','${t.annonce_titre}','${t.vendeur}')">
+                ⭐ Noter
+              </button>
+              <button class="btn-action btn-litige"
+                onclick="ouvrirLitige('${t.id}','${t.annonce_titre}','${t.vendeur}')">
+                🚨 Litige
+              </button>` : ''
+            }
+            <button class="btn-action btn-message"
+              onclick="contacter('${ongletActif === 'achats' ? t.vendeur : t.acheteur}','${t.annonce_titre}','${t.annonce_id}')">
+              💬 Message
+            </button>
+          </div>
+        </div>
+      `).join('')
+    }
+
+    function afficherOnglet(onglet) {
+      ongletActif = onglet
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'))
+      document.getElementById('tab-' + onglet).classList.add('active')
+      chargerTransactions()
+    }
+
+    function ouvrirNote(id, titre, vendeur) {
+      transactionActive = id
+      noteSelectionnee = 0
+      document.getElementById('note-sub').textContent = `Article : ${titre} · Vendeur : ${vendeur}`
+      document.querySelectorAll('.etoile-btn').forEach(b => b.classList.remove('selected'))
+      document.getElementById('note-commentaire').value = ''
+      document.getElementById('modal-note').classList.add('open')
+    }
+
+    function selectionnerNote(note) {
+      noteSelectionnee = note
+      document.querySelectorAll('.etoile-btn').forEach((b, i) => {
+        b.classList.toggle('selected', i < note)
+      })
+    }
+
+    async function soumettreNote() {
+      if (!noteSelectionnee) {
+        afficherToast('⚠️ Sélectionne une note !')
+        return
+      }
+      const commentaire = document.getElementById('note-commentaire').value.trim()
+      const btn = document.getElementById('btn-noter')
+      btn.disabled = true
+      btn.textContent = 'Envoi...'
+
+      const { data: transaction } = await db
+        .from('transactions')
+        .select('annonce_id')
+        .eq('id', transactionActive)
+        .single()
+
+      await db.from('transactions').update({
+        note_acheteur: noteSelectionnee,
+        commentaire_acheteur: commentaire,
+        statut: 'termine'
+      }).eq('id', transactionActive)
+
+      if (transaction?.annonce_id) {
+        await db.from('Annonces').delete().eq('id', transaction.annonce_id)
+      }
+
+      btn.disabled = false
+      btn.textContent = 'Valider ma note →'
+      document.getElementById('modal-note').classList.remove('open')
+      afficherToast('✅ Note envoyée ! L\'annonce a été archivée.')
+      chargerTransactions()
+    }
+
+    function ouvrirLitige(id, titre, vendeur) {
+      transactionActive = id
+      document.getElementById('litige-raison-select').value = ''
+      document.getElementById('litige-description').value = ''
+      document.getElementById('modal-litige').classList.add('open')
+    }
+
+    async function soumettrelitige() {
+      const raison = document.getElementById('litige-raison-select').value
+      const description = document.getElementById('litige-description').value.trim()
+
+      if (!raison) {
+        afficherToast('⚠️ Choisis une raison !')
+        return
+      }
+      if (!description) {
+        afficherToast('⚠️ Décris le problème !')
+        return
+      }
+
+      const { data: transaction } = await db
+        .from('transactions')
+        .select('*')
+        .eq('id', transactionActive)
+        .single()
+
+      await db.from('transactions').update({
+        litige_ouvert: true,
+        litige_raison: raison + ' — ' + description
+      }).eq('id', transactionActive)
+
+      await db.from('litiges').insert([{
+        transaction_id: transactionActive,
+        annonce_titre: transaction?.annonce_titre || '',
+        acheteur: monPrenom,
+        vendeur: transaction?.vendeur || '',
+        raison: raison + ' — ' + description,
+        statut: 'ouvert'
+      }])
+
+      document.getElementById('modal-litige').classList.remove('open')
+      afficherToast('🚨 Litige ouvert ! Nous allons examiner votre demande.')
+      chargerTransactions()
+    }
+
+    function contacter(autre, titre, id) {
+      const params = new URLSearchParams({ autre, titre, id })
+      window.location.href = 'messages.html?' + params.toString()
+    }
+
+    function fermerModal(e, id) {
+      if (e.target === document.getElementById(id)) {
+        document.getElementById(id).classList.remove('open')
+      }
+    }
+
+    function afficherToast(msg) {
+      const t = document.getElementById('toast')
+      t.textContent = msg
+      t.className = 'toast show'
+      setTimeout(() => t.className = 'toast', 2600)
+    }
+
+    init()
+  </script>
+
+</body>
+</html>
