@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fripiz – CGU, Mentions légales & Confidentialité</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Segoe UI', sans-serif; background: #F7F5F2; color: #1A1A1A; }
+    header {
+      background: white; padding: 16px 20px;
+      display: flex; align-items: center;
+      gap: 12px; border-bottom: 1px solid #eee;
+      position: sticky; top: 0; z-index: 100;
+    }
+    .btn-retour { background: none; border: none; font-size: 22px; cursor: pointer; }
+    .logo { font-size: 20px; font-weight: 700; color: #FF5C35; }
+    .logo span { color: #1A1A1A; }
+
+    .tabs {
+      display: flex; background: white;
+      border-bottom: 1px solid #eee;
+      overflow-x: auto; scrollbar-width: none;
+    }
+    .tabs::-webkit-scrollbar { display: none; }
+    .tab {
+      padding: 14px 20px; background: none;
+      border: none; border-bottom: 3px solid transparent;
+      font-size: 13px; font-weight: 600;
+      color: #999; cursor: pointer; white-space: nowrap;
+      font-family: 'Segoe UI', sans-serif;
+    }
+    .tab.active { color: #FF5C35; border-bottom-color: #FF5C35; }
+
+    .content { padding: 24px 20px 60px; max-width: 700px; margin: 0 auto; }
+    .section { display: none; }
+    .section.active { display: block; }
+
+    h1 { font-size: 22px; font-weight: 700; margin-bottom: 6px; }
+    h2 { font-size: 16px; font-weight: 700; margin: 24px 0 8px; color: #FF5C35; }
+    h3 { font-size: 14px; font-weight: 700; margin: 16px 0 6px; }
+    p { font-size: 14px; line-height: 1.8; color: #444; margin-bottom: 12px; }
+    ul { padding-left: 20px; margin-bottom: 12px; }
+    ul li { font-size: 14px; line-height: 1.8; color: #444; margin-bottom: 4px; }
+    .date { font-size: 12px; color: #999; margin-bottom: 24px; }
+    .highlight {
+      background: #FFF0ED; border-left: 3px solid #FF5C35;
+      padding: 12px 16px; border-radius: 0 8px 8px 0;
+      margin-bottom: 16px; font-size: 14px; color: #444;
+    }
+    .contact-box {
+      background: white; border-radius: 12px;
+      padding: 16px; border: 1px solid #eee;
+      margin-top: 16px;
+    }
+    .contact-box p { margin: 0; }
+    a { color: #FF5C35; text-decoration: none; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <button class="btn-retour" onclick="window.location.href='index.html'">←</button>
+    <div class="logo">Frip<span>iz</span></div>
+  </header>
+
+  <div class="tabs">
+    <button class="tab active" onclick="afficherSection('mentions')">Mentions légales</button>
+    <button class="tab" onclick="afficherSection('cgu')">CGU</button>
+    <button class="tab" onclick="afficherSection('confidentialite')">Confidentialité</button>
+    <button class="tab" onclick="afficherSection('cookies')">Cookies</button>
+  </div>
+
+  <div class="content">
+
+    <!-- MENTIONS LÉGALES -->
+    <div class="section active" id="mentions">
+      <h1>Mentions légales</h1>
+      <p class="date">Dernière mise à jour : avril 2026</p>
+
+      <h2>Éditeur du site</h2>
+      <p>Le site Fripiz est édité à titre personnel par :</p>
+      <ul>
+        <li><strong>Nom :</strong> Jules Pigner</li>
+        <li><strong>Ville :</strong> Toulouse, France</li>
+        <li><strong>Email :</strong> <a href="mailto:fripiz.contact@gmail.com">fripiz.contact@gmail.com</a></li>
+        <li><strong>Statut :</strong> Particulier — site en phase de développement</li>
+      </ul>
+
+      <h2>Hébergement</h2>
+      <ul>
+        <li><strong>Hébergeur :</strong> Netlify, Inc.</li>
+        <li><strong>Adresse :</strong> 512 2nd Street, Suite 200, San Francisco, CA 94107, États-Unis</li>
+        <li><strong>Site :</strong> <a href="https://www.netlify.com">netlify.com</a></li>
+      </ul>
+
+      <h2>Base de données</h2>
+      <ul>
+        <li><strong>Fournisseur :</strong> Supabase, Inc.</li>
+        <li><strong>Site :</strong> <a href="https://supabase.com">supabase.com</a></li>
+      </ul>
+
+      <h2>Stockage des images</h2>
+      <ul>
+        <li><strong>Fournisseur :</strong> Cloudinary Ltd.</li>
+        <li><strong>Site :</strong> <a href="https://cloudinary.com">cloudinary.com</a></li>
+      </ul>
+
+      <h2>Propriété intellectuelle</h2>
+      <p>L'ensemble du contenu du site Fripiz (textes, graphismes, logo, structure) est la propriété de l'éditeur. Toute reproduction, même partielle, est interdite sans autorisation préalable écrite.</p>
+      <p>Les annonces publiées par les utilisateurs restent leur propriété. En publiant une annonce, l'utilisateur accorde à Fripiz une licence d'affichage non exclusive.</p>
+
+      <h2>Responsabilité</h2>
+      <p>Fripiz agit en tant qu'hébergeur au sens de la loi n°2004-575 du 21 juin 2004 pour la confiance dans l'économie numérique (LCEN). À ce titre, Fripiz n'est pas responsable du contenu des annonces publiées par les utilisateurs.</p>
+      <p>Fripiz s'engage à retirer tout contenu illicite signalé dans les meilleurs délais.</p>
+
+      <div class="contact-box">
+        <p>📧 Pour toute question légale : <a href="mailto:fripiz.contact@gmail.com">fripiz.contact@gmail.com</a></p>
+      </div>
+    </div>
+
+    <!-- CGU -->
+    <div class="section" id="cgu">
+      <h1>Conditions Générales d'Utilisation</h1>
+      <p class="date">Dernière mise à jour : avril 2026</p>
+
+      <div class="highlight">
+        En utilisant Fripiz, vous acceptez les présentes CGU. Si vous n'acceptez pas ces conditions, veuillez ne pas utiliser le service.
+      </div>
+
+      <h2>1. Description du service</h2>
+      <p>Fripiz est une plateforme de mise en relation entre particuliers pour la vente et l'achat de vêtements, accessoires et objets d'occasion. Fripiz agit uniquement en tant qu'intermédiaire et n'est pas partie aux transactions entre utilisateurs.</p>
+
+      <h2>2. Inscription et compte utilisateur</h2>
+      <p>L'inscription est gratuite et ouverte à toute personne physique. En créant un compte, vous vous engagez à :</p>
+      <ul>
+        <li>Fournir des informations exactes et à jour</li>
+        <li>Maintenir la confidentialité de vos identifiants</li>
+        <li>Ne pas créer plusieurs comptes</li>
+        <li>Être responsable de toute activité sur votre compte</li>
+      </ul>
+
+      <h2>3. Règles de publication des annonces</h2>
+      <p>En publiant une annonce sur Fripiz, vous vous engagez à :</p>
+      <ul>
+        <li>Décrire l'article de manière honnête et précise</li>
+        <li>Utiliser uniquement vos propres photos ou des photos libres de droits</li>
+        <li>Fixer un prix raisonnable et conforme à l'état de l'article</li>
+        <li>Ne vendre que des articles vous appartenant légalement</li>
+        <li>Retirer l'annonce dès que l'article est vendu</li>
+      </ul>
+
+      <h2>4. Articles interdits</h2>
+      <p>Il est strictement interdit de vendre sur Fripiz :</p>
+      <ul>
+        <li>Des articles contrefaisants ou imitant des marques déposées</li>
+        <li>Des articles volés ou d'origine douteuse</li>
+        <li>Des armes, drogues ou substances illicites</li>
+        <li>Des articles à caractère pornographique ou illégal</li>
+        <li>Des médicaments ou dispositifs médicaux</li>
+        <li>Tout article dont la vente est interdite par la loi française</li>
+      </ul>
+
+      <h2>5. Transactions entre utilisateurs</h2>
+      <p>Fripiz met en relation acheteurs et vendeurs mais n'intervient pas dans les transactions. Les utilisateurs sont seuls responsables des accords conclus entre eux. Fripiz ne garantit pas la qualité, la sécurité ou la légalité des articles vendus.</p>
+      <p>En cas de litige entre utilisateurs, Fripiz peut intervenir à titre de médiation sans y être obligé.</p>
+
+      <h2>6. Système de messagerie</h2>
+      <p>La messagerie intégrée est réservée aux échanges liés aux annonces. Il est interdit d'utiliser la messagerie pour du harcèlement, des sollicitations commerciales non désirées ou tout contenu illicite.</p>
+
+      <h2>7. Système d'offres</h2>
+      <p>Le système d'offres permet aux acheteurs de proposer un prix différent du prix affiché. Le vendeur est libre d'accepter ou refuser toute offre. Une offre acceptée constitue un engagement moral mais non juridiquement contraignant tant que le paiement n'est pas effectué.</p>
+
+      <h2>8. Suspension et suppression de compte</h2>
+      <p>Fripiz se réserve le droit de suspendre ou supprimer tout compte en cas de :</p>
+      <ul>
+        <li>Violation des présentes CGU</li>
+        <li>Publication d'annonces frauduleuses ou illicites</li>
+        <li>Comportement abusif envers d'autres utilisateurs</li>
+        <li>Tentative de contournement du système de paiement</li>
+      </ul>
+
+      <h2>9. Limitation de responsabilité</h2>
+      <p>Fripiz est fourni "tel quel" sans garantie d'aucune sorte. Fripiz ne saurait être tenu responsable des dommages directs ou indirects résultant de l'utilisation du service, des transactions entre utilisateurs ou de l'indisponibilité temporaire du service.</p>
+
+      <h2>10. Modification des CGU</h2>
+      <p>Fripiz se réserve le droit de modifier les présentes CGU à tout moment. Les utilisateurs seront informés des modifications par email. La continuité d'utilisation du service vaut acceptation des nouvelles CGU.</p>
+
+      <h2>11. Droit applicable</h2>
+      <p>Les présentes CGU sont soumises au droit français. En cas de litige, les tribunaux compétents sont ceux de Toulouse, France.</p>
+
+      <div class="contact-box">
+        <p>📧 Pour toute question : <a href="mailto:fripiz.contact@gmail.com">fripiz.contact@gmail.com</a></p>
+      </div>
+    </div>
+
+    <!-- CONFIDENTIALITÉ -->
+    <div class="section" id="confidentialite">
+      <h1>Politique de confidentialité</h1>
+      <p class="date">Dernière mise à jour : avril 2026</p>
+
+      <div class="highlight">
+        Fripiz respecte votre vie privée et s'engage à protéger vos données personnelles conformément au Règlement Général sur la Protection des Données (RGPD).
+      </div>
+
+      <h2>1. Responsable du traitement</h2>
+      <p>Jules Pigner, Toulouse, France.<br>
+      Contact : <a href="mailto:fripiz.contact@gmail.com">fripiz.contact@gmail.com</a></p>
+
+      <h2>2. Données collectées</h2>
+      <p>Fripiz collecte les données suivantes :</p>
+      <ul>
+        <li><strong>Données d'inscription :</strong> prénom, adresse email, mot de passe (chiffré)</li>
+        <li><strong>Données des annonces :</strong> titre, description, prix, photos, catégorie</li>
+        <li><strong>Données de messagerie :</strong> messages échangés entre utilisateurs</li>
+        <li><strong>Données de navigation :</strong> adresse IP, type de navigateur (via Supabase)</li>
+      </ul>
+
+      <h2>3. Finalités du traitement</h2>
+      <p>Vos données sont utilisées pour :</p>
+      <ul>
+        <li>Gérer votre compte et vous authentifier</li>
+        <li>Afficher et gérer vos annonces</li>
+        <li>Permettre la messagerie entre utilisateurs</li>
+        <li>Assurer la sécurité et prévenir les fraudes</li>
+        <li>Améliorer le service Fripiz</li>
+      </ul>
+
+      <h2>4. Base légale</h2>
+      <p>Le traitement de vos données est basé sur :</p>
+      <ul>
+        <li>L'exécution du contrat (CGU) pour les données nécessaires au service</li>
+        <li>Votre consentement pour les communications optionnelles</li>
+        <li>L'intérêt légitime pour la sécurité du service</li>
+      </ul>
+
+      <h2>5. Durée de conservation</h2>
+      <ul>
+        <li><strong>Données de compte :</strong> conservées jusqu'à suppression du compte</li>
+        <li><strong>Annonces :</strong> conservées jusqu'à suppression par l'utilisateur</li>
+        <li><strong>Messages :</strong> conservés 1 an après la dernière activité</li>
+      </ul>
+
+      <h2>6. Partage des données</h2>
+      <p>Vos données ne sont jamais vendues à des tiers. Elles peuvent être partagées avec :</p>
+      <ul>
+        <li><strong>Supabase</strong> — hébergement de la base de données</li>
+        <li><strong>Cloudinary</strong> — stockage des photos</li>
+        <li><strong>Netlify</strong> — hébergement du site</li>
+      </ul>
+      <p>Ces prestataires sont soumis à des obligations de confidentialité strictes.</p>
+
+      <h2>7. Vos droits</h2>
+      <p>Conformément au RGPD, vous disposez des droits suivants :</p>
+      <ul>
+        <li><strong>Droit d'accès :</strong> obtenir une copie de vos données</li>
+        <li><strong>Droit de rectification :</strong> corriger vos données inexactes</li>
+        <li><strong>Droit à l'effacement :</strong> supprimer votre compte et vos données</li>
+        <li><strong>Droit à la portabilité :</strong> recevoir vos données dans un format lisible</li>
+        <li><strong>Droit d'opposition :</strong> vous opposer à certains traitements</li>
+      </ul>
+      <p>Pour exercer ces droits, contactez-nous à <a href="mailto:fripiz.contact@gmail.com">fripiz.contact@gmail.com</a>. Nous répondrons dans un délai de 30 jours.</p>
+
+      <h2>8. Sécurité</h2>
+      <p>Fripiz met en œuvre des mesures techniques et organisationnelles pour protéger vos données : chiffrement des mots de passe, connexions HTTPS, accès restreint aux bases de données.</p>
+
+      <h2>9. Réclamation</h2>
+      <p>Si vous estimez que vos droits ne sont pas respectés, vous pouvez déposer une réclamation auprès de la CNIL : <a href="https://www.cnil.fr">cnil.fr</a></p>
+
+      <div class="contact-box">
+        <p>📧 Contact DPO : <a href="mailto:fripiz.contact@gmail.com">fripiz.contact@gmail.com</a></p>
+      </div>
+    </div>
+
+    <!-- COOKIES -->
+    <div class="section" id="cookies">
+      <h1>Politique de cookies</h1>
+      <p class="date">Dernière mise à jour : avril 2026</p>
+
+      <h2>Qu'est-ce qu'un cookie ?</h2>
+      <p>Un cookie est un petit fichier texte déposé sur votre appareil lors de votre visite sur un site web. Il permet de mémoriser des informations sur votre navigation.</p>
+
+      <h2>Cookies utilisés par Fripiz</h2>
+
+      <h3>Cookies strictement nécessaires</h3>
+      <p>Ces cookies sont indispensables au fonctionnement du site. Ils ne peuvent pas être désactivés.</p>
+      <ul>
+        <li><strong>Session d'authentification</strong> — maintient votre connexion (Supabase)</li>
+        <li><strong>Préférences de navigation</strong> — mémorise vos filtres et catégories</li>
+      </ul>
+
+      <h3>Cookies de performance</h3>
+      <p>Ces cookies nous aident à comprendre comment le site est utilisé afin de l'améliorer. Aucun cookie de tracking publicitaire n'est utilisé sur Fripiz.</p>
+
+      <h2>Cookies tiers</h2>
+      <p>Fripiz utilise les services suivants qui peuvent déposer leurs propres cookies :</p>
+      <ul>
+        <li><strong>Supabase</strong> — gestion de l'authentification</li>
+        <li><strong>Cloudinary</strong> — affichage des images</li>
+      </ul>
+
+      <h2>Gérer vos cookies</h2>
+      <p>Vous pouvez contrôler et supprimer les cookies via les paramètres de votre navigateur. Attention, la désactivation de certains cookies peut affecter le fonctionnement du site, notamment la connexion à votre compte.</p>
+
+      <h2>Pas de publicité</h2>
+      <div class="highlight">
+        Fripiz n'utilise aucun cookie publicitaire et ne partage pas vos données de navigation avec des annonceurs.
+      </div>
+
+      <div class="contact-box">
+        <p>📧 Pour toute question sur les cookies : <a href="mailto:fripiz.contact@gmail.com">fripiz.contact@gmail.com</a></p>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    function afficherSection(id) {
+      document.querySelectorAll('.section').forEach(s => s.classList.remove('active'))
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'))
+      document.getElementById(id).classList.add('active')
+      event.target.classList.add('active')
+    }
+  </script>
+
+</body>
+</html>
