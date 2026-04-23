@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fripiz – Modifier mon profil</title>
+  <script src="https://unpkg.com/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Segoe UI', sans-serif; background: #F7F5F2; color: #1A1A1A; }
+    header {
+      background: white; padding: 16px 20px;
+      display: flex; align-items: center;
+      gap: 12px; border-bottom: 1px solid #eee;
+      position: sticky; top: 0; z-index: 100;
+    }
+    .btn-retour { background: none; border: none; font-size: 22px; cursor: pointer; }
+    .page-title { font-size: 16px; font-weight: 700; flex: 1; text-align: center; }
+
+    .photo-section {
+      background: white; padding: 30px 20px;
+      text-align: center; border-bottom: 1px solid #eee;
+    }
+    .avatar-container {
+      position: relative; display: inline-block;
+      margin-bottom: 12px;
+    }
+    .avatar {
+      width: 100px; height: 100px; border-radius: 50%;
+      background: #FF5C35; color: white;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 40px; font-weight: 700;
+      overflow: hidden;
+    }
+    .avatar img { width: 100%; height: 100%; object-fit: cover; }
+    .btn-changer-photo {
+      position: absolute; bottom: 0; right: 0;
+      width: 32px; height: 32px;
+      background: #FF5C35; color: white;
+      border: 3px solid white; border-radius: 50%;
+      font-size: 14px; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .photo-hint { font-size: 12px; color: #999; }
+
+    .form-section { padding: 20px 16px 100px; }
+    .form-group { margin-bottom: 16px; }
+    .form-label {
+      font-size: 12px; color: #999;
+      margin-bottom: 6px; display: block;
+      font-weight: 500;
+    }
+    .form-input {
+      width: 100%; border: 1.5px solid #eee;
+      border-radius: 12px; padding: 12px 16px;
+      font-size: 15px; outline: none;
+      font-family: 'Segoe UI', sans-serif;
+      background: white; transition: border-color 0.2s;
+    }
+    .form-input:focus { border-color: #FF5C35; }
+    .form-input:disabled {
+      background: #F7F5F2; color: #999; cursor: not-allowed;
+    }
+    .form-hint { font-size: 11px; color: #bbb; margin-top: 4px; }
+
+    .btn-sauvegarder {
+      position: fixed; bottom: 0; left: 0; right: 0;
+      background: white; padding: 12px 16px 28px;
+      border-top: 1px solid #eee;
+    }
+    .btn-save {
+      width: 100%; background: #FF5C35; color: white;
+      border: none; border-radius: 12px; padding: 14px;
+      font-size: 15px; font-weight: 600; cursor: pointer;
+      font-family: 'Segoe UI', sans-serif;
+    }
+    .btn-save:disabled { opacity: 0.6; cursor: not-allowed; }
+
+    .upload-progress {
+      text-align: center; font-size: 13px;
+      color: #FF5C35; margin-top: 8px; display: none;
+    }
+
+    .toast {
+      position: fixed; bottom: 90px; left: 50%;
+      transform: translateX(-50%);
+      background: #1A1A1A; color: white;
+      padding: 10px 20px; border-radius: 20px;
+      font-size: 13px; display: none; z-index: 300;
+      white-space: nowrap;
+    }
+    .toast.show { display: block; }
+    .loading { text-align: center; padding: 60px; color: #999; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <button class="btn-retour" onclick="window.location.href='profil.html'">←</button>
+    <div class="page-title">Modifier mon profil</div>
+    <div style="width:32px"></div>
+  </header>
+
+  <div id="contenu">
+    <div class="loading">Chargement...</div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    const SUPABASE_URL = 'https://milpcxrfvufgqyukjyep.supabase.co'
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1pbHBjeHJmdnVmZ3F5dWtqeWVwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY2ODk3NzgsImV4cCI6MjA5MjI2NTc3OH0.TUh3kxzmjlQX38naPqQvJ6hpyNzPbi1fUoILuXKDZ9Q'
+    const CLOUDINARY_CLOUD = 'doq5uvqor'
+    const CLOUDINARY_PRESET = 'fripiz'
+
+    const { createClient } = supabase
+    const db = createClient(SUPABASE_URL, SUPABASE_KEY)
+
+    let user = null
+    let profil = null
+    let nouvellePhotoFile = null
+    let nouvellePhotoPreview = null
+
+    async function init() {
+      const { data: { user: u } } = await db.auth.getUser()
+      if (!u) { window.location.href = 'auth.html'; return }
+      user = u
+
+      const prenom = user.user_metadata?.prenom || 'Utilisateur'
+
+      const { data: p } = await db.from('profils')
+        .select('*').eq('utilisateur', prenom).single()
+      profil = p || {}
+
+      document.getElementById('contenu').innerHTML = `
+        <div class="photo-section">
+          <div class="avatar-container">
+            <div class="avatar" id="avatar">
+              ${profil.photo_profil
+                ? `<img src="${profil.photo_profil}" alt="${prenom}" id="avatar-img" />`
+                : prenom.charAt(0).toUpperCase()
+              }
+            </div>
+            <button class="btn-changer-photo" onclick="changerPhoto()">📷</button>
+          </div>
+          <div class="photo-hint">Appuie sur 📷 pour changer ta photo</div>
+          <div class="upload-progress" id="upload-progress">Upload en cours...</div>
+        </div>
+
+        <div class="form-section">
+          <div class="form-group">
+            <label class="form-label">Prénom / Pseudo</label>
+            <input class="form-input" id="prenom" value="${prenom}"
+              placeholder="Ton prénom ou pseudo" />
+            <div class="form-hint">Visible par tous les utilisateurs</div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Email</label>
+            <input class="form-input" id="email" value="${user.email}"
+              disabled />
+            <div class="form-hint">L'email ne peut pas être modifié</div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Description</label>
+            <textarea class="form-input" id="description" rows="4"
+              placeholder="Parle de toi, de ce que tu vends...">${profil.description || ''}</textarea>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Localisation</label>
+            <input class="form-input" id="localisation"
+              value="${profil.localisation || ''}"
+              placeholder="Ex : Toulouse, France" />
+            <div class="form-hint">Aide les acheteurs à estimer les frais de port</div>
+          </div>
+        </div>
+
+        <div class="btn-sauvegarder">
+          <button class="btn-save" id="btn-save" onclick="sauvegarder()">
+            Sauvegarder les modifications →
+          </button>
+        </div>
+      `
+    }
+
+    function changerPhoto() {
+      const input = document.createElement('input')
+      input.type = 'file'
+      input.accept = 'image/*'
+      input.onchange = (e) => {
+        const file = e.target.files[0]
+        if (!file) return
+        nouvellePhotoFile = file
+        const reader = new FileReader()
+        reader.onload = ev => {
+          nouvellePhotoPreview = ev.target.result
+          const avatar = document.getElementById('avatar')
+          avatar.innerHTML = `<img src="${ev.target.result}" alt="preview" id="avatar-img" />`
+        }
+        reader.readAsDataURL(file)
+      }
+      input.click()
+    }
+
+    async function uploadPhotoProfil(file) {
+      const formData = new FormData()
+      formData.append('file', file)
+      formData.append('upload_preset', CLOUDINARY_PRESET)
+      const res = await fetch(
+        `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD}/image/upload`,
+        { method: 'POST', body: formData }
+      )
+      const data = await res.json()
+      return data.secure_url
+    }
+
+    async function sauvegarder() {
+      const prenom = document.getElementById('prenom').value.trim()
+      const description = document.getElementById('description').value.trim()
+      const localisation = document.getElementById('localisation').value.trim()
+      const btn = document.getElementById('btn-save')
+
+      if (!prenom) {
+        afficherToast('⚠️ Le prénom ne peut pas être vide !')
+        return
+      }
+
+      btn.disabled = true
+      btn.textContent = 'Sauvegarde...'
+
+      let photoUrl = profil.photo_profil || null
+
+      if (nouvellePhotoFile) {
+        const progress = document.getElementById('upload-progress')
+        progress.style.display = 'block'
+        progress.textContent = 'Upload de la photo...'
+        photoUrl = await uploadPhotoProfil(nouvellePhotoFile)
+        progress.style.display = 'none'
+      }
+
+      await db.auth.updateUser({
+        data: { prenom }
+      })
+
+      const ancienPrenom = user.user_metadata?.prenom || 'Utilisateur'
+
+      const { error } = await db.from('profils').upsert([{
+        utilisateur: prenom,
+        photo_profil: photoUrl,
+        description: description || null,
+        localisation: localisation || null
+      }], { onConflict: 'utilisateur' })
+
+      if (ancienPrenom !== prenom) {
+        await db.from('Annonces').update({ vendeur: prenom }).eq('vendeur', ancienPrenom)
+      }
+
+      btn.disabled = false
+      btn.textContent = 'Sauvegarder les modifications →'
+
+      if (error) {
+        afficherToast('❌ Erreur lors de la sauvegarde')
+        return
+      }
+
+      afficherToast('✅ Profil mis à jour !')
+      setTimeout(() => window.location.href = 'profil.html', 1500)
+    }
+
+    function afficherToast(msg) {
+      const t = document.getElementById('toast')
+      t.textContent = msg
+      t.className = 'toast show'
+      setTimeout(() => t.className = 'toast', 2600)
+    }
+
+    init()
+  </script>
+
+</body>
+</html>
