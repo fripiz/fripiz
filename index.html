@@ -72,6 +72,11 @@
       cursor: pointer; display: flex;
       align-items: center; justify-content: center;
     }
+    .nb-photos {
+      position: absolute; bottom: 8px; right: 8px;
+      background: rgba(0,0,0,0.5); color: white;
+      font-size: 10px; padding: 2px 6px; border-radius: 10px;
+    }
     .article-info { padding: 10px 12px; }
     .article-nom { font-size: 13px; font-weight: 600; margin-bottom: 2px; }
     .article-taille { font-size: 11px; color: #999; margin-bottom: 6px; }
@@ -115,17 +120,47 @@
       width: 100%; border: 1px solid #ddd; border-radius: 10px;
       padding: 10px 12px; font-size: 14px; background: white; outline: none;
     }
-    .upload-zone {
-      border: 2px dashed #ddd; border-radius: 12px;
-      padding: 24px; text-align: center;
-      cursor: pointer; transition: border-color 0.2s;
-      margin-bottom: 12px;
+    .photos-grid {
+      display: grid; grid-template-columns: repeat(5, 1fr);
+      gap: 6px; margin-bottom: 12px;
     }
-    .upload-zone:hover { border-color: #FF5C35; }
-    .upload-zone.has-image { border-color: #FF5C35; padding: 0; overflow: hidden; }
-    .upload-zone img { width: 100%; height: 200px; object-fit: cover; border-radius: 10px; }
-    .upload-icon { font-size: 32px; margin-bottom: 8px; }
-    .upload-text { font-size: 13px; color: #999; }
+    .photo-case {
+      aspect-ratio: 1; border-radius: 8px;
+      border: 1.5px dashed #ddd;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      cursor: pointer; overflow: hidden;
+      position: relative; background: #FAFAFA;
+      transition: border-color 0.15s;
+    }
+    .photo-case:hover { border-color: #FF5C35; }
+    .photo-case.remplie { border: none; }
+    .photo-case img {
+      width: 100%; height: 100%; object-fit: cover;
+    }
+    .photo-case .icone { font-size: 18px; }
+    .photo-case .num { font-size: 9px; color: #ccc; margin-top: 2px; }
+    .photo-case .btn-effacer {
+      position: absolute; top: 2px; right: 2px;
+      width: 18px; height: 18px;
+      background: rgba(0,0,0,0.6); color: white;
+      border: none; border-radius: 50%;
+      font-size: 10px; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .photo-case .btn-rotation {
+      position: absolute; bottom: 2px; right: 2px;
+      width: 18px; height: 18px;
+      background: rgba(255,92,53,0.85); color: white;
+      border: none; border-radius: 50%;
+      font-size: 11px; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .photo-case.premiere { border-color: #FF5C35; }
+    .photo-case.premiere .icone { color: #FF5C35; }
+    .photos-hint {
+      font-size: 11px; color: #999; text-align: center; margin-bottom: 8px;
+    }
     .upload-progress {
       display: none; text-align: center;
       font-size: 13px; color: #FF5C35; margin-top: 8px;
@@ -209,17 +244,14 @@
     <div class="modal">
       <div class="modal-handle"></div>
       <div class="modal-title">Publier une annonce</div>
+
       <div class="form-group">
-        <label class="form-label">Photo de l'article</label>
-        <div class="upload-zone" id="upload-zone"
-          onclick="document.getElementById('photo-input').click()">
-          <div class="upload-icon">📷</div>
-          <div class="upload-text">Appuie pour ajouter une photo</div>
-        </div>
-        <input type="file" id="photo-input" accept="image/*"
-          style="display:none" onchange="previsualiserPhoto(this)" />
+        <label class="form-label">Photos (10 max)</label>
+        <p class="photos-hint">📷 Clique sur une case · ↻ Pour tourner · ✕ Pour supprimer</p>
+        <div class="photos-grid" id="photos-grid"></div>
         <div class="upload-progress" id="upload-progress">Upload en cours...</div>
       </div>
+
       <div class="form-group">
         <label class="form-label">Titre</label>
         <input class="form-input" id="titre" placeholder="Ex : Veste en jean taille M" />
@@ -245,10 +277,6 @@
         <label class="form-label">Description</label>
         <textarea class="form-input" id="description" rows="3"
           placeholder="Décrivez votre article..."></textarea>
-      </div>
-      <div class="form-group">
-        <label class="form-label">Ton prénom</label>
-        <input class="form-input" id="vendeur" placeholder="Ex : Jules" />
       </div>
       <button class="btn-publier" id="btn-publier" onclick="publierAnnonce()">
         Publier gratuitement →
@@ -292,6 +320,100 @@
     }
 
     let toutesLesAnnonces = []
+    const MAX_PHOTOS = 10
+    let photos = new Array(MAX_PHOTOS).fill(null)
+
+    function initGrille() {
+      const grid = document.getElementById('photos-grid')
+      grid.innerHTML = ''
+      for (let i = 0; i < MAX_PHOTOS; i++) {
+        const div = document.createElement('div')
+        div.className = 'photo-case' + (i === 0 && !photos[i] ? ' premiere' : '')
+        div.id = 'case-' + i
+
+        if (photos[i]) {
+          div.classList.add('remplie')
+          const rotation = photos[i].rotation || 0
+          div.innerHTML = `
+            <img src="${photos[i].preview}" alt="photo ${i+1}" id="img-${i}"
+              style="transform:rotate(${rotation}deg);transition:transform 0.3s;" />
+            <button class="btn-effacer"
+              onclick="event.stopPropagation();effacerPhoto(${i})">✕</button>
+            <button class="btn-rotation"
+              onclick="event.stopPropagation();tournerPhoto(${i})">↻</button>
+          `
+        } else {
+          div.onclick = () => selectionnerPhoto(i)
+          div.innerHTML = `
+            <span class="icone">📷</span>
+            <span class="num">${i + 1}</span>
+          `
+        }
+        grid.appendChild(div)
+      }
+    }
+
+    function selectionnerPhoto(index) {
+      const input = document.createElement('input')
+      input.type = 'file'
+      input.accept = 'image/*'
+      input.onchange = (e) => {
+        const file = e.target.files[0]
+        if (!file) return
+        const reader = new FileReader()
+        reader.onload = ev => {
+          photos[index] = { file, preview: ev.target.result, rotation: 0 }
+          initGrille()
+        }
+        reader.readAsDataURL(file)
+      }
+      input.click()
+    }
+
+    function effacerPhoto(index) {
+      photos[index] = null
+      initGrille()
+    }
+
+    function tournerPhoto(index) {
+      if (!photos[index]) return
+      photos[index].rotation = ((photos[index].rotation || 0) + 90) % 360
+      const img = document.getElementById('img-' + index)
+      if (img) img.style.transform = `rotate(${photos[index].rotation}deg)`
+    }
+
+    async function uploadPhoto(photoObj) {
+      return new Promise((resolve) => {
+        const img = new Image()
+        img.onload = () => {
+          const canvas = document.createElement('canvas')
+          const rotation = photoObj.rotation || 0
+          if (rotation === 90 || rotation === 270) {
+            canvas.width = img.height
+            canvas.height = img.width
+          } else {
+            canvas.width = img.width
+            canvas.height = img.height
+          }
+          const ctx = canvas.getContext('2d')
+          ctx.translate(canvas.width / 2, canvas.height / 2)
+          ctx.rotate((rotation * Math.PI) / 180)
+          ctx.drawImage(img, -img.width / 2, -img.height / 2)
+          canvas.toBlob(async (blob) => {
+            const formData = new FormData()
+            formData.append('file', blob, 'photo.jpg')
+            formData.append('upload_preset', CLOUDINARY_PRESET)
+            const res = await fetch(
+              `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD}/image/upload`,
+              { method: 'POST', body: formData }
+            )
+            const data = await res.json()
+            resolve(data.secure_url)
+          }, 'image/jpeg', 0.9)
+        }
+        img.src = photoObj.preview
+      })
+    }
 
     async function verifierConnexion() {
       const { data: { user } } = await db.auth.getUser()
@@ -308,17 +430,13 @@
 
     async function chargerAnnonces() {
       const { data, error } = await db
-        .from('Annonces')
-        .select('*')
+        .from('Annonces').select('*')
         .order('created_at', { ascending: false })
-
       if (error) {
-        console.error('Erreur:', error)
         document.getElementById('grille').innerHTML =
           '<div class="loading">Erreur de chargement 😕</div>'
         return
       }
-
       toutesLesAnnonces = data
       afficherAnnonces(data)
       chargerFavoris()
@@ -330,29 +448,33 @@
         grille.innerHTML = '<div class="loading">Aucune annonce pour le moment.<br>Sois le premier à vendre ! 🎉</div>'
         return
       }
-      grille.innerHTML = annonces.map(a => `
+      grille.innerHTML = annonces.map(a => {
+        const premierephoto = (a.photos && a.photos.length > 0) ? a.photos[0] : a.photo
+        const nbPhotos = (a.photos && a.photos.length > 0) ? a.photos.length : (a.photo ? 1 : 0)
+        return `
         <div class="article" onclick="window.location.href='annonce.html?id=${a.id}'">
           <div class="article-img">
-            ${a.photo
-              ? `<img src="${a.photo}" alt="${a.titre}" />`
+            ${premierephoto
+              ? `<img src="${premierephoto}" alt="${a.titre}" />`
               : (a.emoji || emojis[a.categorie] || '📦')
             }
             <button class="btn-fav" id="fav-${a.id}"
-              onclick="toggleFavori('${a.id}','${a.titre}','${a.prix}','${a.photo || ''}','${a.emoji || ''}','${a.vendeur}','${a.categorie}')">
+              onclick="event.stopPropagation();toggleFavori('${a.id}','${a.titre}','${a.prix}','${premierephoto || ''}','${a.emoji || ''}','${a.vendeur}','${a.categorie}')">
               🤍
             </button>
+            ${nbPhotos > 1 ? `<span class="nb-photos">📷 ${nbPhotos}</span>` : ''}
           </div>
           <div class="article-info">
             <div class="article-nom">${a.titre}</div>
             <div class="article-taille">${a.vendeur} · ${a.categorie}</div>
             <div class="article-prix">${a.prix} €</div>
             <button class="btn-contacter"
-              onclick="contacterVendeur('${a.vendeur}', '${a.titre}', '${a.id}')">
+              onclick="event.stopPropagation();contacterVendeur('${a.vendeur}','${a.titre}','${a.id}')">
               💬 Contacter
             </button>
           </div>
-        </div>
-      `).join('')
+        </div>`
+      }).join('')
     }
 
     async function chargerFavoris() {
@@ -370,32 +492,21 @@
 
     async function toggleFavori(id, titre, prix, photo, emoji, vendeur, categorie) {
       const { data: { user } } = await db.auth.getUser()
-      if (!user) {
-        afficherToast('⚠️ Connecte-toi pour ajouter des favoris !')
-        return
-      }
+      if (!user) { afficherToast('⚠️ Connecte-toi pour ajouter des favoris !'); return }
       const prenom = user.user_metadata?.prenom || 'Moi'
       const btn = document.getElementById('fav-' + id)
-
       const { data: existants } = await db.from('favoris')
-        .select('id')
-        .eq('utilisateur', prenom)
-        .eq('annonce_id', id)
-
+        .select('id').eq('utilisateur', prenom).eq('annonce_id', id)
       if (existants && existants.length > 0) {
         await db.from('favoris').delete().eq('id', existants[0].id)
         btn.textContent = '🤍'
         afficherToast('Retiré des favoris')
       } else {
         await db.from('favoris').insert([{
-          utilisateur: prenom,
-          annonce_id: id,
-          annonce_titre: titre,
-          annonce_prix: parseFloat(prix),
-          annonce_photo: photo || null,
-          annonce_emoji: emoji || null,
-          annonce_vendeur: vendeur,
-          annonce_categorie: categorie
+          utilisateur: prenom, annonce_id: id,
+          annonce_titre: titre, annonce_prix: parseFloat(prix),
+          annonce_photo: photo || null, annonce_emoji: emoji || null,
+          annonce_vendeur: vendeur, annonce_categorie: categorie
         }])
         btn.textContent = '❤️'
         afficherToast('❤️ Ajouté aux favoris !')
@@ -403,7 +514,7 @@
     }
 
     function contacterVendeur(vendeur, titre, id) {
-      const params = new URLSearchParams({ autre: vendeur, titre: titre, id: id })
+      const params = new URLSearchParams({ autre: vendeur, titre, id })
       window.location.href = 'messages.html?' + params.toString()
     }
 
@@ -423,66 +534,54 @@
       afficherAnnonces(filtrees)
     }
 
-    function previsualiserPhoto(input) {
-      const file = input.files[0]
-      if (!file) return
-      const zone = document.getElementById('upload-zone')
-      const reader = new FileReader()
-      reader.onload = e => {
-        zone.innerHTML = `<img src="${e.target.result}" alt="preview" />`
-        zone.classList.add('has-image')
-      }
-      reader.readAsDataURL(file)
-    }
-
-    async function uploadPhoto(file) {
-      const formData = new FormData()
-      formData.append('file', file)
-      formData.append('upload_preset', CLOUDINARY_PRESET)
-      const progress = document.getElementById('upload-progress')
-      progress.style.display = 'block'
-      progress.textContent = 'Upload de la photo...'
-      const res = await fetch(
-        `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD}/image/upload`,
-        { method: 'POST', body: formData }
-      )
-      const data = await res.json()
-      progress.style.display = 'none'
-      return data.secure_url
-    }
-
     async function publierAnnonce() {
       const titre = document.getElementById('titre').value.trim()
       const prix = document.getElementById('prix').value
       const categorie = document.getElementById('categorie').value
       const description = document.getElementById('description').value.trim()
-      const vendeur = document.getElementById('vendeur').value.trim()
-      const photoInput = document.getElementById('photo-input')
       const btn = document.getElementById('btn-publier')
 
-      if (!titre || !prix || !vendeur) {
-        afficherToast('⚠️ Remplis le titre, le prix et ton prénom !')
+      const { data: { user } } = await db.auth.getUser()
+      if (!user) {
+        afficherToast('⚠️ Connecte-toi pour publier une annonce !')
+        return
+      }
+      const vendeur = user.user_metadata?.prenom || user.email
+
+      if (!titre || !prix) {
+        afficherToast('⚠️ Remplis le titre et le prix !')
         return
       }
 
       btn.disabled = true
       btn.textContent = 'Publication...'
 
-      let photo = null
-      if (photoInput.files[0]) {
-        photo = await uploadPhoto(photoInput.files[0])
+      const progress = document.getElementById('upload-progress')
+      let photosUrls = []
+      const photosARemplir = photos.filter(p => p !== null)
+
+      if (photosARemplir.length > 0) {
+        progress.style.display = 'block'
+        for (let i = 0; i < photosARemplir.length; i++) {
+          progress.textContent = `Upload des photos (${i+1}/${photosARemplir.length})...`
+          const url = await uploadPhoto(photosARemplir[i])
+          photosUrls.push(url)
+        }
+        progress.style.display = 'none'
       }
 
       const { error } = await db.from('Annonces').insert([{
         titre, prix: parseFloat(prix), categorie,
-        description, vendeur, emoji: emojis[categorie], photo
+        description, vendeur,
+        emoji: emojis[categorie],
+        photo: photosUrls[0] || null,
+        photos: photosUrls.length > 0 ? photosUrls : null
       }])
 
       btn.disabled = false
       btn.textContent = 'Publier gratuitement →'
 
       if (error) {
-        console.error('Erreur insert:', error)
         afficherToast('❌ Erreur lors de la publication')
         return
       }
@@ -492,16 +591,14 @@
       document.getElementById('titre').value = ''
       document.getElementById('prix').value = ''
       document.getElementById('description').value = ''
-      document.getElementById('vendeur').value = ''
-      document.getElementById('upload-zone').innerHTML =
-        '<div class="upload-icon">📷</div><div class="upload-text">Appuie pour ajouter une photo</div>'
-      document.getElementById('upload-zone').classList.remove('has-image')
-      photoInput.value = ''
+      photos = new Array(MAX_PHOTOS).fill(null)
+      initGrille()
       chargerAnnonces()
     }
 
     function ouvrirModal() {
       document.getElementById('modal').classList.add('open')
+      initGrille()
     }
 
     function fermerModal(e) {
@@ -520,11 +617,6 @@
     verifierConnexion()
     chargerAnnonces()
   </script>
-<div style="text-align:center;padding:20px;font-size:12px;color:#999;margin-bottom:80px;">
-    <a href="cgu.html" style="color:#999;text-decoration:none;margin:0 8px;">Mentions légales</a>
-    <a href="cgu.html" style="color:#999;text-decoration:none;margin:0 8px;">CGU</a>
-    <a href="cgu.html" style="color:#999;text-decoration:none;margin:0 8px;">Confidentialité</a>
-    <span style="margin:0 8px;">© 2026 Fripiz</span>
-  </div>
+
 </body>
 </html>

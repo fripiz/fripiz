@@ -17,16 +17,56 @@
     .btn-retour { background: none; border: none; font-size: 22px; cursor: pointer; }
     .page-title { font-size: 16px; font-weight: 700; flex: 1; text-align: center; }
 
-    .annonce-img {
-      width: 100%; aspect-ratio: 1;
-      background: #F0EDE8;
+    /* CAROUSEL */
+    .carousel {
+      position: relative; width: 100%;
+      aspect-ratio: 1; background: #F0EDE8;
+      overflow: hidden;
+    }
+    .carousel-track {
+      display: flex; height: 100%;
+      transition: transform 0.3s ease;
+    }
+    .carousel-slide {
+      min-width: 100%; height: 100%;
       display: flex; align-items: center;
       justify-content: center; font-size: 100px;
-      overflow: hidden; position: relative;
+      flex-shrink: 0;
     }
-    .annonce-img img { width: 100%; height: 100%; object-fit: cover; }
+    .carousel-slide img {
+      width: 100%; height: 100%; object-fit: cover;
+    }
+    .carousel-btn {
+      position: absolute; top: 50%;
+      transform: translateY(-50%);
+      width: 36px; height: 36px;
+      background: rgba(255,255,255,0.9);
+      border: none; border-radius: 50%;
+      font-size: 16px; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      z-index: 10;
+    }
+    .carousel-btn.prev { left: 10px; }
+    .carousel-btn.next { right: 10px; }
+    .carousel-dots {
+      position: absolute; bottom: 10px;
+      left: 50%; transform: translateX(-50%);
+      display: flex; gap: 6px;
+    }
+    .dot {
+      width: 6px; height: 6px;
+      border-radius: 50%; background: rgba(255,255,255,0.5);
+      transition: background 0.2s;
+    }
+    .dot.active { background: white; }
+    .carousel-count {
+      position: absolute; top: 10px; right: 10px;
+      background: rgba(0,0,0,0.5); color: white;
+      font-size: 11px; padding: 3px 8px;
+      border-radius: 10px;
+    }
     .btn-fav-detail {
-      position: absolute; top: 12px; right: 12px;
+      position: absolute; top: 10px; left: 10px;
       background: rgba(255,255,255,0.9);
       border: none; border-radius: 50%;
       width: 40px; height: 40px; font-size: 20px;
@@ -35,20 +75,17 @@
     }
 
     .annonce-body { padding: 20px 16px 120px; }
-
     .annonce-top {
       display: flex; align-items: flex-start;
       justify-content: space-between; margin-bottom: 8px;
     }
     .annonce-titre { font-size: 20px; font-weight: 700; flex: 1; }
     .annonce-prix { font-size: 26px; font-weight: 700; color: #FF5C35; margin-left: 12px; }
-
     .annonce-tags { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
     .tag {
       background: #F0EDE8; border-radius: 20px;
       padding: 5px 12px; font-size: 12px; color: #666;
     }
-
     .vendeur-card {
       background: white; border-radius: 14px;
       padding: 14px 16px; margin-bottom: 16px;
@@ -65,16 +102,8 @@
     }
     .vendeur-nom { font-size: 15px; font-weight: 600; }
     .vendeur-note { font-size: 12px; color: #999; }
-
-    .section-titre {
-      font-size: 15px; font-weight: 700;
-      margin-bottom: 8px; margin-top: 16px;
-    }
-    .annonce-desc {
-      font-size: 14px; color: #555;
-      line-height: 1.7; margin-bottom: 16px;
-    }
-
+    .section-titre { font-size: 15px; font-weight: 700; margin-bottom: 8px; margin-top: 16px; }
+    .annonce-desc { font-size: 14px; color: #555; line-height: 1.7; margin-bottom: 16px; }
     .infos-grid {
       display: grid; grid-template-columns: repeat(2, 1fr);
       gap: 10px; margin-bottom: 16px;
@@ -86,7 +115,6 @@
     .info-label { font-size: 11px; color: #999; margin-bottom: 4px; }
     .info-val { font-size: 14px; font-weight: 600; }
 
-    /* BARRE DU BAS */
     .action-bar {
       position: fixed; bottom: 0; left: 0; right: 0;
       background: white; border-top: 1px solid #eee;
@@ -106,11 +134,9 @@
       color: white; border: none;
       border-radius: 12px; padding: 14px;
       font-size: 14px; font-weight: 600;
-      cursor: pointer;
-      font-family: 'Segoe UI', sans-serif;
+      cursor: pointer; font-family: 'Segoe UI', sans-serif;
     }
 
-    /* MODAL OFFRE */
     .modal-overlay {
       display: none; position: fixed; inset: 0;
       background: rgba(0,0,0,0.4); z-index: 200;
@@ -128,9 +154,7 @@
     }
     .modal-title { font-size: 18px; font-weight: 700; margin-bottom: 6px; }
     .modal-sub { font-size: 13px; color: #999; margin-bottom: 20px; }
-    .prix-actuel {
-      text-align: center; margin-bottom: 16px;
-    }
+    .prix-actuel { text-align: center; margin-bottom: 16px; }
     .prix-actuel span { font-size: 13px; color: #999; }
     .prix-actuel strong { font-size: 24px; color: #FF5C35; display: block; }
     .form-group { margin-bottom: 16px; }
@@ -154,14 +178,11 @@
 
     .offres-recues {
       background: white; border-radius: 14px;
-      border: 1px solid #eee; overflow: hidden;
-      margin-bottom: 16px;
+      border: 1px solid #eee; overflow: hidden; margin-bottom: 16px;
     }
     .offre-item {
-      padding: 12px 16px;
-      border-bottom: 1px solid #eee;
-      display: flex; align-items: center;
-      justify-content: space-between;
+      padding: 12px 16px; border-bottom: 1px solid #eee;
+      display: flex; align-items: center; justify-content: space-between;
     }
     .offre-item:last-child { border-bottom: none; }
     .offre-info { flex: 1; }
@@ -187,7 +208,6 @@
       padding: 5px 10px; font-size: 11px;
       font-weight: 600; cursor: pointer;
     }
-
     .toast {
       position: fixed; bottom: 90px; left: 50%;
       transform: translateX(-50%);
@@ -247,6 +267,8 @@
     let annonce = null
     let monPrenom = null
     let estVendeur = false
+    let photoIndex = 0
+    let photos = []
 
     async function init() {
       const params = new URLSearchParams(window.location.search)
@@ -267,6 +289,11 @@
 
       annonce = data
       estVendeur = monPrenom && monPrenom === annonce.vendeur
+
+      photos = (annonce.photos && annonce.photos.length > 0)
+        ? annonce.photos
+        : (annonce.photo ? [annonce.photo] : [])
+
       afficherAnnonce()
       if (estVendeur) chargerOffres()
     }
@@ -274,29 +301,47 @@
     async function afficherAnnonce() {
       const favori = await verifierFavori()
 
-      document.getElementById('contenu').innerHTML = `
-        <div class="annonce-img">
-          ${annonce.photo
-            ? `<img src="${annonce.photo}" alt="${annonce.titre}" />`
-            : (annonce.emoji || emojis[annonce.categorie] || '📦')
-          }
+      const carouselHTML = photos.length > 0 ? `
+        <div class="carousel">
+          <div class="carousel-track" id="carousel-track">
+            ${photos.map(p => `
+              <div class="carousel-slide">
+                <img src="${p}" alt="${annonce.titre}" />
+              </div>
+            `).join('')}
+          </div>
+          ${photos.length > 1 ? `
+            <button class="carousel-btn prev" onclick="changerPhoto(-1)">◀</button>
+            <button class="carousel-btn next" onclick="changerPhoto(1)">▶</button>
+            <div class="carousel-dots" id="carousel-dots">
+              ${photos.map((_, i) => `<div class="dot ${i === 0 ? 'active' : ''}"></div>`).join('')}
+            </div>
+            <div class="carousel-count" id="carousel-count">1 / ${photos.length}</div>
+          ` : ''}
           <button class="btn-fav-detail" id="btn-fav" onclick="toggleFavori()">
             ${favori ? '❤️' : '🤍'}
           </button>
         </div>
+      ` : `
+        <div class="carousel" style="display:flex;align-items:center;justify-content:center;font-size:100px;">
+          ${annonce.emoji || emojis[annonce.categorie] || '📦'}
+          <button class="btn-fav-detail" id="btn-fav" onclick="toggleFavori()" style="position:absolute;top:10px;left:10px;">
+            ${favori ? '❤️' : '🤍'}
+          </button>
+        </div>
+      `
 
+      document.getElementById('contenu').innerHTML = `
+        ${carouselHTML}
         <div class="annonce-body">
           <div class="annonce-top">
             <div class="annonce-titre">${annonce.titre}</div>
             <div class="annonce-prix">${annonce.prix} €</div>
           </div>
-
           <div class="annonce-tags">
             <span class="tag">${annonce.categorie}</span>
-            ${annonce.taille ? `<span class="tag">Taille ${annonce.taille}</span>` : ''}
-            ${annonce.etat ? `<span class="tag">${annonce.etat}</span>` : ''}
+            ${photos.length > 0 ? `<span class="tag">📷 ${photos.length} photo${photos.length > 1 ? 's' : ''}</span>` : ''}
           </div>
-
           <div class="vendeur-card" onclick="contacterVendeur()">
             <div class="vendeur-avatar">${annonce.vendeur.charAt(0).toUpperCase()}</div>
             <div>
@@ -305,12 +350,10 @@
             </div>
             <span style="color:#ccc;font-size:18px;">›</span>
           </div>
-
           ${annonce.description ? `
             <div class="section-titre">Description</div>
             <div class="annonce-desc">${annonce.description}</div>
           ` : ''}
-
           <div class="infos-grid">
             <div class="info-item">
               <div class="info-label">Catégorie</div>
@@ -329,13 +372,11 @@
               <div class="info-val">${new Date(annonce.created_at).toLocaleDateString('fr-FR')}</div>
             </div>
           </div>
-
           ${estVendeur ? `
             <div class="section-titre">Offres reçues</div>
-            <div id="offres-container">Chargement des offres...</div>
+            <div id="offres-container">Chargement...</div>
           ` : ''}
         </div>
-
         <div class="action-bar">
           ${estVendeur
             ? `<button class="btn-offre" onclick="contacterVendeur()">💬 Messages</button>
@@ -347,37 +388,38 @@
       `
     }
 
+    function changerPhoto(direction) {
+      photoIndex = (photoIndex + direction + photos.length) % photos.length
+      const track = document.getElementById('carousel-track')
+      if (track) track.style.transform = `translateX(-${photoIndex * 100}%)`
+      const dots = document.querySelectorAll('.dot')
+      dots.forEach((d, i) => d.classList.toggle('active', i === photoIndex))
+      const count = document.getElementById('carousel-count')
+      if (count) count.textContent = `${photoIndex + 1} / ${photos.length}`
+    }
+
     async function verifierFavori() {
       if (!monPrenom) return false
       const { data } = await db.from('favoris')
-        .select('id').eq('utilisateur', monPrenom)
-        .eq('annonce_id', annonce.id)
+        .select('id').eq('utilisateur', monPrenom).eq('annonce_id', annonce.id)
       return data && data.length > 0
     }
 
     async function toggleFavori() {
-      if (!monPrenom) {
-        afficherToast('⚠️ Connecte-toi pour ajouter aux favoris !')
-        return
-      }
+      if (!monPrenom) { afficherToast('⚠️ Connecte-toi pour ajouter aux favoris !'); return }
       const btn = document.getElementById('btn-fav')
       const { data: existants } = await db.from('favoris')
         .select('id').eq('utilisateur', monPrenom).eq('annonce_id', annonce.id)
-
       if (existants && existants.length > 0) {
         await db.from('favoris').delete().eq('id', existants[0].id)
         btn.textContent = '🤍'
         afficherToast('Retiré des favoris')
       } else {
         await db.from('favoris').insert([{
-          utilisateur: monPrenom,
-          annonce_id: annonce.id,
-          annonce_titre: annonce.titre,
-          annonce_prix: annonce.prix,
-          annonce_photo: annonce.photo || null,
-          annonce_emoji: annonce.emoji || null,
-          annonce_vendeur: annonce.vendeur,
-          annonce_categorie: annonce.categorie
+          utilisateur: monPrenom, annonce_id: annonce.id,
+          annonce_titre: annonce.titre, annonce_prix: annonce.prix,
+          annonce_photo: photos[0] || null, annonce_emoji: annonce.emoji || null,
+          annonce_vendeur: annonce.vendeur, annonce_categorie: annonce.categorie
         }])
         btn.textContent = '❤️'
         afficherToast('❤️ Ajouté aux favoris !')
@@ -388,15 +430,12 @@
       const { data } = await db.from('offres')
         .select('*').eq('annonce_id', annonce.id)
         .order('created_at', { ascending: false })
-
       const container = document.getElementById('offres-container')
       if (!container) return
-
       if (!data || data.length === 0) {
-        container.innerHTML = '<div style="color:#999;font-size:13px;padding:8px 0;">Aucune offre reçue pour le moment</div>'
+        container.innerHTML = '<div style="color:#999;font-size:13px;padding:8px 0;">Aucune offre reçue</div>'
         return
       }
-
       container.innerHTML = `
         <div class="offres-recues">
           ${data.map(o => `
@@ -404,21 +443,17 @@
               <div class="offre-info">
                 <div class="offre-acheteur">${o.acheteur}</div>
                 <div class="offre-prix">${o.prix_propose} €
-                  <span style="font-size:12px;color:#999;font-weight:400;">
-                    (prix original : ${o.prix_original} €)
-                  </span>
+                  <span style="font-size:12px;color:#999;font-weight:400;">(prix : ${o.prix_original} €)</span>
                 </div>
                 ${o.statut === 'en attente' ? `
                   <div class="offre-actions">
                     <button class="btn-accepter" onclick="repondreOffre('${o.id}','accepte')">✅ Accepter</button>
                     <button class="btn-refuser" onclick="repondreOffre('${o.id}','refuse')">❌ Refuser</button>
-                  </div>` : ''
-                }
+                  </div>` : ''}
               </div>
               <span class="offre-statut ${
                 o.statut === 'en attente' ? 'statut-attente' :
-                o.statut === 'accepte' ? 'statut-accepte' : 'statut-refuse'
-              }">
+                o.statut === 'accepte' ? 'statut-accepte' : 'statut-refuse'}">
                 ${o.statut === 'en attente' ? '⏳ En attente' :
                   o.statut === 'accepte' ? '✅ Acceptée' : '❌ Refusée'}
               </span>
@@ -434,10 +469,7 @@
     }
 
     function ouvrirOffre() {
-      if (!monPrenom) {
-        afficherToast('⚠️ Connecte-toi pour faire une offre !')
-        return
-      }
+      if (!monPrenom) { afficherToast('⚠️ Connecte-toi pour faire une offre !'); return }
       document.getElementById('prix-demande').textContent = annonce.prix + ' €'
       document.getElementById('offre-input').value = ''
       document.getElementById('modal-offre').classList.add('open')
@@ -445,59 +477,31 @@
 
     async function envoyerOffre() {
       const prixPropose = parseFloat(document.getElementById('offre-input').value)
-      if (!prixPropose || prixPropose <= 0) {
-        afficherToast('⚠️ Entre un prix valide !')
-        return
-      }
-      if (prixPropose >= annonce.prix) {
-        afficherToast('⚠️ Ton offre doit être inférieure au prix demandé !')
-        return
-      }
-
+      if (!prixPropose || prixPropose <= 0) { afficherToast('⚠️ Entre un prix valide !'); return }
+      if (prixPropose >= annonce.prix) { afficherToast('⚠️ Ton offre doit être inférieure au prix !'); return }
       const btn = document.getElementById('btn-offre')
       btn.disabled = true
       btn.textContent = 'Envoi...'
-
       const { error } = await db.from('offres').insert([{
-        annonce_id: annonce.id,
-        annonce_titre: annonce.titre,
-        acheteur: monPrenom,
-        vendeur: annonce.vendeur,
-        prix_propose: prixPropose,
-        prix_original: annonce.prix,
-        statut: 'en attente'
+        annonce_id: annonce.id, annonce_titre: annonce.titre,
+        acheteur: monPrenom, vendeur: annonce.vendeur,
+        prix_propose: prixPropose, prix_original: annonce.prix, statut: 'en attente'
       }])
-
       btn.disabled = false
       btn.textContent = 'Envoyer mon offre →'
-
-      if (error) {
-        afficherToast('❌ Erreur lors de l\'envoi')
-        return
-      }
-
+      if (error) { afficherToast('❌ Erreur lors de l\'envoi'); return }
       document.getElementById('modal-offre').classList.remove('open')
       afficherToast('✅ Offre envoyée au vendeur !')
     }
 
     function acheter() {
-      if (!monPrenom) {
-        afficherToast('⚠️ Connecte-toi pour acheter !')
-        return
-      }
+      if (!monPrenom) { afficherToast('⚠️ Connecte-toi pour acheter !'); return }
       afficherToast('💳 Paiement bientôt disponible !')
     }
 
     function contacterVendeur() {
-      if (!monPrenom) {
-        afficherToast('⚠️ Connecte-toi pour envoyer un message !')
-        return
-      }
-      const params = new URLSearchParams({
-        autre: annonce.vendeur,
-        titre: annonce.titre,
-        id: annonce.id
-      })
+      if (!monPrenom) { afficherToast('⚠️ Connecte-toi pour envoyer un message !'); return }
+      const params = new URLSearchParams({ autre: annonce.vendeur, titre: annonce.titre, id: annonce.id })
       window.location.href = 'messages.html?' + params.toString()
     }
 
