@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fripiz – Administration</title>
+  <script src="https://unpkg.com/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Segoe UI', sans-serif; background: #F7F5F2; color: #1A1A1A; }
+    header {
+      background: #1A1A1A; padding: 16px 20px;
+      display: flex; align-items: center;
+      justify-content: space-between;
+    }
+    .logo { font-size: 20px; font-weight: 700; color: #FF5C35; }
+    .admin-badge {
+      background: #FF5C35; color: white;
+      font-size: 11px; padding: 4px 10px;
+      border-radius: 20px; font-weight: 600;
+    }
+    .stats-grid {
+      display: grid; grid-template-columns: repeat(2, 1fr);
+      gap: 10px; padding: 16px;
+    }
+    .stat-card {
+      background: white; border-radius: 12px;
+      padding: 16px; border: 1px solid #eee;
+      text-align: center;
+    }
+    .stat-num { font-size: 28px; font-weight: 700; color: #FF5C35; }
+    .stat-label { font-size: 12px; color: #999; margin-top: 4px; }
+    .section { padding: 0 16px 16px; }
+    .section-title {
+      font-size: 16px; font-weight: 700;
+      margin-bottom: 12px; margin-top: 16px;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .badge-count {
+      background: #FF5C35; color: white;
+      font-size: 11px; padding: 2px 8px;
+      border-radius: 20px; font-weight: 600;
+    }
+    .signalement-card {
+      background: white; border-radius: 14px;
+      border: 1px solid #eee; margin-bottom: 10px;
+      overflow: hidden;
+    }
+    .signal-header {
+      padding: 12px 16px;
+      display: flex; align-items: flex-start;
+      gap: 10px;
+    }
+    .signal-type {
+      font-size: 11px; padding: 3px 10px;
+      border-radius: 20px; font-weight: 600;
+      flex-shrink: 0;
+    }
+    .type-annonce { background: #FFF4E5; color: #9A5C00; }
+    .type-compte { background: #FEE8E8; color: #C0392B; }
+    .signal-info { flex: 1; }
+    .signal-cible { font-size: 14px; font-weight: 600; margin-bottom: 2px; }
+    .signal-raison { font-size: 12px; color: #666; margin-bottom: 2px; }
+    .signal-desc { font-size: 12px; color: #999; }
+    .signal-meta { font-size: 11px; color: #bbb; margin-top: 4px; }
+    .signal-actions {
+      border-top: 1px solid #eee;
+      padding: 10px 16px;
+      display: flex; gap: 8px;
+    }
+    .btn-action {
+      flex: 1; padding: 9px;
+      border-radius: 10px; border: none;
+      font-size: 12px; font-weight: 600;
+      cursor: pointer; font-family: 'Segoe UI', sans-serif;
+    }
+    .btn-supprimer { background: #FEE8E8; color: #C0392B; }
+    .btn-bloquer { background: #1A1A1A; color: white; }
+    .btn-ignorer { background: #F0F0F0; color: #555; }
+    .btn-voir {
+      background: #FFF0ED; color: #FF5C35;
+      text-decoration: none; display: flex;
+      align-items: center; justify-content: center;
+    }
+    .empty-state {
+      text-align: center; padding: 40px 20px;
+      color: #999; font-size: 14px;
+    }
+    .empty-icon { font-size: 40px; margin-bottom: 10px; }
+    .loading { text-align: center; padding: 40px; color: #999; }
+    .comptes-bloques { margin-top: 8px; }
+    .compte-bloque {
+      background: white; border-radius: 12px;
+      border: 1px solid #eee; padding: 12px 16px;
+      margin-bottom: 8px;
+      display: flex; align-items: center; gap: 12px;
+    }
+    .compte-avatar {
+      width: 36px; height: 36px; border-radius: 50%;
+      background: #FEE8E8; color: #C0392B;
+      display: flex; align-items: center;
+      justify-content: center; font-size: 14px;
+      font-weight: 700; flex-shrink: 0;
+    }
+    .compte-info { flex: 1; }
+    .compte-nom { font-size: 14px; font-weight: 600; }
+    .compte-raison { font-size: 12px; color: #999; }
+    .btn-debloquer {
+      background: #E8F8EE; color: #1A7A40;
+      border: none; border-radius: 8px;
+      padding: 6px 12px; font-size: 12px;
+      font-weight: 600; cursor: pointer;
+    }
+    .access-denied {
+      text-align: center; padding: 80px 20px;
+    }
+    .access-denied h2 { font-size: 20px; margin-bottom: 10px; }
+    .access-denied p { color: #999; font-size: 14px; }
+    .toast {
+      position: fixed; bottom: 20px; left: 50%;
+      transform: translateX(-50%);
+      background: #1A1A1A; color: white;
+      padding: 10px 20px; border-radius: 20px;
+      font-size: 13px; display: none; z-index: 300;
+      white-space: nowrap;
+    }
+    .toast.show { display: block; }
+    .refresh-btn {
+      background: none; border: 1px solid #444;
+      color: white; padding: 6px 14px;
+      border-radius: 20px; font-size: 12px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="logo">Fripiz Admin</div>
+    <div style="display:flex;gap:8px;align-items:center;">
+      <button class="refresh-btn" onclick="init()">↻ Actualiser</button>
+      <span class="admin-badge">⚡ Admin</span>
+    </div>
+  </header>
+
+  <div id="contenu">
+    <div class="loading">Chargement...</div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script>
+    const SUPABASE_URL = 'https://milpcxrfvufgqyukjyep.supabase.co'
+    const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1pbHBjeHJmdnVmZ3F5dWtqeWVwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY2ODk3NzgsImV4cCI6MjA5MjI2NTc3OH0.TUh3kxzmjlQX38naPqQvJ6hpyNzPbi1fUoILuXKDZ9Q'
+    const { createClient } = supabase
+    const db = createClient(SUPABASE_URL, SUPABASE_KEY)
+
+    const ADMIN_EMAIL = 'fripiz.contact@gmail.com'
+
+    async function init() {
+      const { data: { user } } = await db.auth.getUser()
+
+      if (!user || user.email !== ADMIN_EMAIL) {
+        document.getElementById('contenu').innerHTML = `
+          <div class="access-denied">
+            <div style="font-size:60px;margin-bottom:16px;">🔒</div>
+            <h2>Accès refusé</h2>
+            <p>Cette page est réservée à l'administrateur de Fripiz.</p>
+          </div>`
+        return
+      }
+
+      const [
+        { data: signalements },
+        { data: bloques },
+        { data: annonces },
+        { data: users },
+        { data: transactions }
+      ] = await Promise.all([
+        db.from('signalements').select('*').eq('statut', 'en attente').order('created_at', { ascending: false }),
+        db.from('comptes_bloques').select('*').order('created_at', { ascending: false }),
+        db.from('Annonces').select('id'),
+        db.from('transactions').select('id'),
+        db.from('transactions').select('id')
+      ])
+
+      const nbSignalements = signalements?.length || 0
+      const nbBloques = bloques?.length || 0
+      const nbAnnonces = annonces?.length || 0
+      const nbTransactions = transactions?.length || 0
+
+      document.getElementById('contenu').innerHTML = `
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-num">${nbAnnonces}</div>
+            <div class="stat-label">Annonces actives</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-num">${nbTransactions}</div>
+            <div class="stat-label">Transactions</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-num" style="color:${nbSignalements > 0 ? '#C0392B' : '#27AE60'}">${nbSignalements}</div>
+            <div class="stat-label">Signalements en attente</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-num">${nbBloques}</div>
+            <div class="stat-label">Comptes bloqués</div>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="section-title">
+            🚨 Signalements en attente
+            ${nbSignalements > 0 ? `<span class="badge-count">${nbSignalements}</span>` : ''}
+          </div>
+          ${nbSignalements === 0
+            ? `<div class="empty-state">
+                <div class="empty-icon">✅</div>
+                Aucun signalement en attente
+              </div>`
+            : signalements.map(s => `
+              <div class="signalement-card" id="signal-${s.id}">
+                <div class="signal-header">
+                  <span class="signal-type ${s.type === 'annonce' ? 'type-annonce' : 'type-compte'}">
+                    ${s.type === 'annonce' ? '📦 Annonce' : '👤 Compte'}
+                  </span>
+                  <div class="signal-info">
+                    <div class="signal-cible">${s.cible_titre || s.cible_id}</div>
+                    <div class="signal-raison">⚠️ ${s.raison}</div>
+                    ${s.description ? `<div class="signal-desc">${s.description}</div>` : ''}
+                    <div class="signal-meta">Signalé par ${s.signaleur} · ${new Date(s.created_at).toLocaleDateString('fr-FR')}</div>
+                  </div>
+                </div>
+                <div class="signal-actions">
+                  ${s.type === 'annonce' ? `
+                    <button class="btn-action btn-supprimer"
+                      onclick="supprimerAnnonce('${s.cible_id}','${s.id}')">
+                      🗑️ Supprimer
+                    </button>` : ''
+                  }
+                  <button class="btn-action btn-bloquer"
+                    onclick="bloquerCompte('${s.type === 'annonce' ? s.signaleur : s.cible_id}','${s.raison}','${s.id}')">
+                    🔒 Bloquer
+                  </button>
+                  <button class="btn-action btn-ignorer"
+                    onclick="ignorer('${s.id}')">
+                    ✓ Ignorer
+                  </button>
+                </div>
+              </div>
+            `).join('')
+          }
+
+          <div class="section-title" style="margin-top:24px;">
+            🔒 Comptes bloqués
+            ${nbBloques > 0 ? `<span class="badge-count">${nbBloques}</span>` : ''}
+          </div>
+          ${nbBloques === 0
+            ? `<div class="empty-state">
+                <div class="empty-icon">👥</div>
+                Aucun compte bloqué
+              </div>`
+            : `<div class="comptes-bloques">
+                ${bloques.map(b => `
+                  <div class="compte-bloque" id="bloque-${b.id}">
+                    <div class="compte-avatar">${b.utilisateur.charAt(0).toUpperCase()}</div>
+                    <div class="compte-info">
+                      <div class="compte-nom">${b.utilisateur}</div>
+                      <div class="compte-raison">${b.raison || 'Aucune raison'}</div>
+                    </div>
+                    <button class="btn-debloquer" onclick="debloquer('${b.id}','${b.utilisateur}')">
+                      ✓ Débloquer
+                    </button>
+                  </div>
+                `).join('')}
+              </div>`
+          }
+        </div>
+      `
+    }
+
+    async function supprimerAnnonce(annonceId, signalementId) {
+      if (!confirm('Supprimer cette annonce ?')) return
+      await db.from('Annonces').delete().eq('id', annonceId)
+      await db.from('signalements').update({ statut: 'traite' }).eq('id', signalementId)
+      document.getElementById('signal-' + signalementId)?.remove()
+      afficherToast('✅ Annonce supprimée !')
+      init()
+    }
+
+    async function bloquerCompte(utilisateur, raison, signalementId) {
+      if (!confirm(`Bloquer le compte de ${utilisateur} ?`)) return
+      await db.from('comptes_bloques').insert([{
+        utilisateur, raison, bloque_par: 'admin'
+      }])
+      if (signalementId) {
+        await db.from('signalements').update({ statut: 'traite' }).eq('id', signalementId)
+      }
+      afficherToast(`🔒 Compte ${utilisateur} bloqué !`)
+      init()
+    }
+
+    async function ignorer(signalementId) {
+      await db.from('signalements').update({ statut: 'ignore' }).eq('id', signalementId)
+      document.getElementById('signal-' + signalementId)?.remove()
+      afficherToast('✓ Signalement ignoré')
+      init()
+    }
+
+    async function debloquer(id, utilisateur) {
+      if (!confirm(`Débloquer ${utilisateur} ?`)) return
+      await db.from('comptes_bloques').delete().eq('id', id)
+      document.getElementById('bloque-' + id)?.remove()
+      afficherToast(`✅ ${utilisateur} débloqué !`)
+      init()
+    }
+
+    function afficherToast(msg) {
+      const t = document.getElementById('toast')
+      t.textContent = msg
+      t.className = 'toast show'
+      setTimeout(() => t.className = 'toast', 2600)
+    }
+
+    init()
+  </script>
+
+</body>
+</html>

@@ -17,7 +17,6 @@
     .btn-retour { background: none; border: none; font-size: 22px; cursor: pointer; }
     .page-title { font-size: 16px; font-weight: 700; flex: 1; text-align: center; }
 
-    /* CAROUSEL */
     .carousel {
       position: relative; width: 100%;
       aspect-ratio: 1; background: #F0EDE8;
@@ -62,8 +61,7 @@
     .carousel-count {
       position: absolute; top: 10px; right: 10px;
       background: rgba(0,0,0,0.5); color: white;
-      font-size: 11px; padding: 3px 8px;
-      border-radius: 10px;
+      font-size: 11px; padding: 3px 8px; border-radius: 10px;
     }
     .btn-fav-detail {
       position: absolute; top: 10px; left: 10px;
@@ -74,7 +72,7 @@
       align-items: center; justify-content: center;
     }
 
-    .annonce-body { padding: 20px 16px 120px; }
+    .annonce-body { padding: 20px 16px 140px; }
     .annonce-top {
       display: flex; align-items: flex-start;
       justify-content: space-between; margin-bottom: 8px;
@@ -114,6 +112,14 @@
     }
     .info-label { font-size: 11px; color: #999; margin-bottom: 4px; }
     .info-val { font-size: 14px; font-weight: 600; }
+
+    .btn-signaler {
+      width: 100%; background: none; border: none;
+      color: #bbb; font-size: 12px; cursor: pointer;
+      padding: 8px; text-align: center;
+      margin-bottom: 8px;
+    }
+    .btn-signaler:hover { color: #C0392B; }
 
     .action-bar {
       position: fixed; bottom: 0; left: 0; right: 0;
@@ -162,19 +168,33 @@
     .form-input {
       width: 100%; border: 1.5px solid #ddd;
       border-radius: 12px; padding: 12px 16px;
+      font-size: 15px; outline: none;
+      font-family: 'Segoe UI', sans-serif;
+    }
+    .form-input:focus { border-color: #FF5C35; }
+    .form-input-grand {
+      width: 100%; border: 1.5px solid #ddd;
+      border-radius: 12px; padding: 12px 16px;
       font-size: 18px; font-weight: 700;
       outline: none; text-align: center;
       font-family: 'Segoe UI', sans-serif;
     }
-    .form-input:focus { border-color: #FF5C35; }
-    .btn-envoyer-offre {
+    .form-input-grand:focus { border-color: #FF5C35; }
+    .form-select {
+      width: 100%; border: 1.5px solid #ddd;
+      border-radius: 12px; padding: 12px 16px;
+      font-size: 14px; background: white; outline: none;
+      font-family: 'Segoe UI', sans-serif;
+    }
+    .btn-envoyer {
       width: 100%; background: #FF5C35; color: white;
       border: none; border-radius: 12px; padding: 14px;
       font-size: 15px; font-weight: 600;
       cursor: pointer; margin-top: 4px;
       font-family: 'Segoe UI', sans-serif;
     }
-    .btn-envoyer-offre:disabled { opacity: 0.6; }
+    .btn-envoyer:disabled { opacity: 0.6; }
+    .btn-envoyer.danger { background: #C0392B; }
 
     .offres-recues {
       background: white; border-radius: 14px;
@@ -208,6 +228,7 @@
       padding: 5px 10px; font-size: 11px;
       font-weight: 600; cursor: pointer;
     }
+
     .toast {
       position: fixed; bottom: 90px; left: 50%;
       transform: translateX(-50%);
@@ -218,6 +239,21 @@
     }
     .toast.show { display: block; }
     .loading { text-align: center; padding: 60px 20px; color: #999; }
+
+    /* MODAL SIGNALEMENT */
+    .raisons-grid {
+      display: flex; flex-direction: column; gap: 8px;
+      margin-bottom: 16px;
+    }
+    .raison-btn {
+      padding: 12px 16px; background: #F7F5F2;
+      border: 1.5px solid #eee; border-radius: 12px;
+      font-size: 14px; cursor: pointer; text-align: left;
+      font-family: 'Segoe UI', sans-serif;
+      transition: all 0.15s;
+    }
+    .raison-btn:hover { border-color: #FF5C35; background: #FFF0ED; color: #FF5C35; }
+    .raison-btn.selected { border-color: #FF5C35; background: #FFF0ED; color: #FF5C35; font-weight: 600; }
   </style>
 </head>
 <body>
@@ -232,7 +268,8 @@
     <div class="loading">Chargement...</div>
   </div>
 
-  <div class="modal-overlay" id="modal-offre" onclick="fermerModal(event)">
+  <!-- MODAL OFFRE -->
+  <div class="modal-overlay" id="modal-offre" onclick="fermerModal(event,'modal-offre')">
     <div class="modal">
       <div class="modal-handle"></div>
       <div class="modal-title">Faire une offre</div>
@@ -243,10 +280,35 @@
       </div>
       <div class="form-group">
         <label class="form-label">Ton offre (€)</label>
-        <input class="form-input" id="offre-input" type="number" placeholder="0" />
+        <input class="form-input-grand" id="offre-input" type="number" placeholder="0" />
       </div>
-      <button class="btn-envoyer-offre" id="btn-offre" onclick="envoyerOffre()">
+      <button class="btn-envoyer" id="btn-offre" onclick="envoyerOffre()">
         Envoyer mon offre →
+      </button>
+    </div>
+  </div>
+
+  <!-- MODAL SIGNALEMENT -->
+  <div class="modal-overlay" id="modal-signal" onclick="fermerModal(event,'modal-signal')">
+    <div class="modal">
+      <div class="modal-handle"></div>
+      <div class="modal-title">🚨 Signaler cette annonce</div>
+      <div class="modal-sub">Aide-nous à maintenir Fripiz sûr pour tous</div>
+      <div class="raisons-grid" id="raisons-grid">
+        <button class="raison-btn" onclick="selectionnerRaison(this,'Contrefaçon suspectée')">🏷️ Contrefaçon suspectée</button>
+        <button class="raison-btn" onclick="selectionnerRaison(this,'Article inapproprié')">🚫 Article inapproprié</button>
+        <button class="raison-btn" onclick="selectionnerRaison(this,'Prix frauduleux')">💰 Prix frauduleux</button>
+        <button class="raison-btn" onclick="selectionnerRaison(this,'Photos volées')">📷 Photos volées</button>
+        <button class="raison-btn" onclick="selectionnerRaison(this,'Vendeur suspect')">👤 Vendeur suspect</button>
+        <button class="raison-btn" onclick="selectionnerRaison(this,'Autre')">❓ Autre raison</button>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Description (optionnel)</label>
+        <textarea class="form-input" id="signal-desc" rows="3"
+          placeholder="Donne plus de détails si nécessaire..."></textarea>
+      </div>
+      <button class="btn-envoyer danger" id="btn-signal" onclick="envoyerSignalement()">
+        🚨 Envoyer le signalement
       </button>
     </div>
   </div>
@@ -269,6 +331,7 @@
     let estVendeur = false
     let photoIndex = 0
     let photos = []
+    let raisonSelectionnee = null
 
     async function init() {
       const params = new URLSearchParams(window.location.search)
@@ -289,7 +352,6 @@
 
       annonce = data
       estVendeur = monPrenom && monPrenom === annonce.vendeur
-
       photos = (annonce.photos && annonce.photos.length > 0)
         ? annonce.photos
         : (annonce.photo ? [annonce.photo] : [])
@@ -323,9 +385,9 @@
           </button>
         </div>
       ` : `
-        <div class="carousel" style="display:flex;align-items:center;justify-content:center;font-size:100px;">
+        <div class="carousel" style="display:flex;align-items:center;justify-content:center;font-size:100px;position:relative;">
           ${annonce.emoji || emojis[annonce.categorie] || '📦'}
-          <button class="btn-fav-detail" id="btn-fav" onclick="toggleFavori()" style="position:absolute;top:10px;left:10px;">
+          <button class="btn-fav-detail" id="btn-fav" onclick="toggleFavori()">
             ${favori ? '❤️' : '🤍'}
           </button>
         </div>
@@ -338,22 +400,26 @@
             <div class="annonce-titre">${annonce.titre}</div>
             <div class="annonce-prix">${annonce.prix} €</div>
           </div>
+
           <div class="annonce-tags">
             <span class="tag">${annonce.categorie}</span>
             ${photos.length > 0 ? `<span class="tag">📷 ${photos.length} photo${photos.length > 1 ? 's' : ''}</span>` : ''}
           </div>
+
           <div class="vendeur-card" onclick="contacterVendeur()">
             <div class="vendeur-avatar">${annonce.vendeur.charAt(0).toUpperCase()}</div>
             <div>
               <div class="vendeur-nom">${annonce.vendeur}</div>
-              <div class="vendeur-note">⭐ 5.0 · Voir le profil</div>
+              <div class="vendeur-note">⭐ 5.0 · Contacter le vendeur</div>
             </div>
             <span style="color:#ccc;font-size:18px;">›</span>
           </div>
+
           ${annonce.description ? `
             <div class="section-titre">Description</div>
             <div class="annonce-desc">${annonce.description}</div>
           ` : ''}
+
           <div class="infos-grid">
             <div class="info-item">
               <div class="info-label">Catégorie</div>
@@ -372,11 +438,19 @@
               <div class="info-val">${new Date(annonce.created_at).toLocaleDateString('fr-FR')}</div>
             </div>
           </div>
+
           ${estVendeur ? `
             <div class="section-titre">Offres reçues</div>
             <div id="offres-container">Chargement...</div>
           ` : ''}
+
+          ${!estVendeur ? `
+            <button class="btn-signaler" onclick="ouvrirSignalement()">
+              🚨 Signaler cette annonce
+            </button>
+          ` : ''}
         </div>
+
         <div class="action-bar">
           ${estVendeur
             ? `<button class="btn-offre" onclick="contacterVendeur()">💬 Messages</button>
@@ -433,7 +507,7 @@
       const container = document.getElementById('offres-container')
       if (!container) return
       if (!data || data.length === 0) {
-        container.innerHTML = '<div style="color:#999;font-size:13px;padding:8px 0;">Aucune offre reçue</div>'
+        container.innerHTML = '<div style="color:#999;font-size:13px;padding:8px 0;">Aucune offre reçue pour le moment</div>'
         return
       }
       container.innerHTML = `
@@ -494,6 +568,52 @@
       afficherToast('✅ Offre envoyée au vendeur !')
     }
 
+    function ouvrirSignalement() {
+      if (!monPrenom) {
+        afficherToast('⚠️ Connecte-toi pour signaler une annonce !')
+        return
+      }
+      raisonSelectionnee = null
+      document.querySelectorAll('.raison-btn').forEach(b => b.classList.remove('selected'))
+      document.getElementById('signal-desc').value = ''
+      document.getElementById('modal-signal').classList.add('open')
+    }
+
+    function selectionnerRaison(btn, raison) {
+      document.querySelectorAll('.raison-btn').forEach(b => b.classList.remove('selected'))
+      btn.classList.add('selected')
+      raisonSelectionnee = raison
+    }
+
+    async function envoyerSignalement() {
+      if (!raisonSelectionnee) {
+        afficherToast('⚠️ Choisis une raison !')
+        return
+      }
+      const description = document.getElementById('signal-desc').value.trim()
+      const btn = document.getElementById('btn-signal')
+      btn.disabled = true
+      btn.textContent = 'Envoi...'
+
+      const { error } = await db.from('signalements').insert([{
+        type: 'annonce',
+        cible_id: annonce.id,
+        cible_titre: annonce.titre,
+        signaleur: monPrenom,
+        raison: raisonSelectionnee,
+        description: description || null,
+        statut: 'en attente'
+      }])
+
+      btn.disabled = false
+      btn.textContent = '🚨 Envoyer le signalement'
+
+      if (error) { afficherToast('❌ Erreur lors du signalement'); return }
+
+      document.getElementById('modal-signal').classList.remove('open')
+      afficherToast('✅ Signalement envoyé, merci !')
+    }
+
     function acheter() {
       if (!monPrenom) { afficherToast('⚠️ Connecte-toi pour acheter !'); return }
       afficherToast('💳 Paiement bientôt disponible !')
@@ -505,9 +625,9 @@
       window.location.href = 'messages.html?' + params.toString()
     }
 
-    function fermerModal(e) {
-      if (e.target === document.getElementById('modal-offre')) {
-        document.getElementById('modal-offre').classList.remove('open')
+    function fermerModal(e, id) {
+      if (e.target === document.getElementById(id)) {
+        document.getElementById(id).classList.remove('open')
       }
     }
 
