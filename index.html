@@ -4,6 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Fripiz</title>
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#FF5C35" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="Fripiz" />
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
   <script src="https://unpkg.com/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -934,7 +940,14 @@
 
     verifierConnexion()
     chargerAnnonces()
-  </script>
+ if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js')
+          .then(reg => console.log('SW enregistré'))
+          .catch(err => console.log('SW erreur:', err))
+      })
+    }
+ </script>
 
 </body>
 </html>
