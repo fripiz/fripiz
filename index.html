@@ -31,24 +31,81 @@
       padding: 14px 32px; border-radius: 30px;
       font-size: 15px; font-weight: 600; cursor: pointer;
     }
-    .search { padding: 0 20px 20px; }
-    .search input {
-      width: 100%; padding: 12px 20px;
+
+    /* BARRE RECHERCHE + FILTRE */
+    .search-bar {
+      padding: 0 16px 12px;
+      display: flex; gap: 8px; align-items: center;
+    }
+    .search-wrap { flex: 1; position: relative; }
+    .search-input {
+      width: 100%; padding: 12px 16px 12px 40px;
       border-radius: 14px; border: 1px solid #ddd;
       font-size: 15px; background: white; outline: none;
+      font-family: 'Segoe UI', sans-serif;
     }
+    .search-icon {
+      position: absolute; left: 14px; top: 50%;
+      transform: translateY(-50%); font-size: 15px; color: #999;
+    }
+    .btn-filtre {
+      background: white; border: 1px solid #ddd;
+      border-radius: 12px; padding: 10px 14px;
+      font-size: 13px; cursor: pointer;
+      display: flex; align-items: center; gap: 6px;
+      white-space: nowrap; color: #1A1A1A;
+      font-family: 'Segoe UI', sans-serif;
+      position: relative;
+    }
+    .btn-filtre.actif { background: #FF5C35; color: white; border-color: #FF5C35; }
+    .filtre-badge {
+      position: absolute; top: -6px; right: -6px;
+      width: 18px; height: 18px;
+      background: #FF5C35; color: white;
+      border-radius: 50%; font-size: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 700; border: 2px solid white;
+    }
+    .btn-filtre.actif .filtre-badge { background: white; color: #FF5C35; }
+
     .categories {
       display: flex; gap: 10px; overflow-x: auto;
-      padding: 0 20px 16px; scrollbar-width: none;
+      padding: 0 16px 16px; scrollbar-width: none;
     }
     .categories::-webkit-scrollbar { display: none; }
     .cat {
       background: white; border: 1px solid #ddd;
       border-radius: 20px; padding: 8px 16px;
       font-size: 13px; cursor: pointer; white-space: nowrap;
+      font-family: 'Segoe UI', sans-serif;
     }
     .cat.active { background: #FF5C35; color: white; border-color: #FF5C35; }
-    .section-title { font-size: 18px; font-weight: 700; padding: 0 20px 12px; }
+
+    /* FILTRES ACTIFS */
+    .filtres-actifs {
+      display: none; gap: 8px; overflow-x: auto;
+      padding: 0 16px 12px; scrollbar-width: none;
+    }
+    .filtres-actifs.visible { display: flex; }
+    .filtres-actifs::-webkit-scrollbar { display: none; }
+    .filtre-tag {
+      background: #FFF0ED; border: 1px solid #FFD5C8;
+      color: #FF5C35; border-radius: 20px;
+      padding: 5px 12px; font-size: 12px;
+      font-weight: 500; white-space: nowrap;
+      display: flex; align-items: center; gap: 6px;
+      cursor: pointer;
+    }
+    .filtre-tag span { font-size: 14px; }
+
+    .section-title {
+      font-size: 18px; font-weight: 700;
+      padding: 0 16px 12px;
+      display: flex; align-items: center;
+      justify-content: space-between;
+    }
+    .nb-resultats { font-size: 13px; color: #999; font-weight: 400; }
+
     .grille {
       display: grid; grid-template-columns: repeat(2, 1fr);
       gap: 12px; padding: 0 12px 100px;
@@ -77,10 +134,23 @@
       background: rgba(0,0,0,0.5); color: white;
       font-size: 10px; padding: 2px 6px; border-radius: 10px;
     }
+    .etat-badge {
+      position: absolute; top: 8px; left: 8px;
+      font-size: 10px; padding: 3px 8px;
+      border-radius: 10px; font-weight: 600;
+    }
+    .etat-neuf { background: #E8F8EE; color: #1A7A40; }
+    .etat-bon { background: #FFF4E5; color: #9A5C00; }
+    .etat-satisfaisant { background: #F0F0F0; color: #555; }
     .article-info { padding: 10px 12px; }
     .article-nom { font-size: 13px; font-weight: 600; margin-bottom: 2px; }
     .article-taille { font-size: 11px; color: #999; margin-bottom: 6px; }
+    .article-bas {
+      display: flex; align-items: center;
+      justify-content: space-between;
+    }
     .article-prix { font-size: 16px; font-weight: 700; }
+    .article-loc { font-size: 10px; color: #bbb; }
     .btn-contacter {
       margin-top: 8px; width: 100%;
       background: #FFF0ED; color: #FF5C35;
@@ -89,6 +159,8 @@
       font-weight: 600; cursor: pointer;
     }
     .loading { text-align: center; padding: 40px; color: #999; font-size: 14px; }
+
+    /* MODAL FILTRES */
     .modal-overlay {
       display: none; position: fixed; inset: 0;
       background: rgba(0,0,0,0.4); z-index: 200;
@@ -105,7 +177,62 @@
       width: 36px; height: 4px; background: #E0E0E0;
       border-radius: 2px; margin: 0 auto 16px;
     }
-    .modal-title { font-size: 18px; font-weight: 700; margin-bottom: 16px; }
+    .modal-title { font-size: 18px; font-weight: 700; margin-bottom: 20px; }
+    .filtre-section { margin-bottom: 20px; }
+    .filtre-label {
+      font-size: 13px; font-weight: 700;
+      color: #1A1A1A; margin-bottom: 10px; display: block;
+    }
+    .prix-range {
+      display: flex; gap: 10px; align-items: center;
+    }
+    .prix-input {
+      flex: 1; border: 1.5px solid #eee;
+      border-radius: 10px; padding: 10px 12px;
+      font-size: 14px; outline: none;
+      font-family: 'Segoe UI', sans-serif;
+      text-align: center;
+    }
+    .prix-input:focus { border-color: #FF5C35; }
+    .prix-sep { color: #999; font-size: 14px; }
+    .chips {
+      display: flex; gap: 8px; flex-wrap: wrap;
+    }
+    .chip {
+      padding: 8px 16px; border-radius: 20px;
+      border: 1.5px solid #eee; background: white;
+      font-size: 13px; cursor: pointer;
+      font-family: 'Segoe UI', sans-serif;
+      transition: all 0.15s;
+    }
+    .chip.selected {
+      background: #FF5C35; color: white;
+      border-color: #FF5C35;
+    }
+    .filtre-actions {
+      display: flex; gap: 10px; margin-top: 8px;
+    }
+    .btn-reset {
+      flex: 1; background: #F0F0F0; color: #555;
+      border: none; border-radius: 12px; padding: 14px;
+      font-size: 14px; font-weight: 600; cursor: pointer;
+      font-family: 'Segoe UI', sans-serif;
+    }
+    .btn-appliquer {
+      flex: 2; background: #FF5C35; color: white;
+      border: none; border-radius: 12px; padding: 14px;
+      font-size: 14px; font-weight: 600; cursor: pointer;
+      font-family: 'Segoe UI', sans-serif;
+    }
+
+    /* MODAL PUBLIER */
+    .modal-pub {
+      background: white; border-radius: 20px 20px 0 0;
+      width: 100%; max-width: 500px;
+      padding: 20px 20px 40px;
+      max-height: 90vh; overflow-y: auto;
+    }
+    .modal-title-pub { font-size: 18px; font-weight: 700; margin-bottom: 16px; }
     .form-group { margin-bottom: 12px; }
     .form-label { font-size: 12px; color: #999; margin-bottom: 4px; display: block; }
     .form-input {
@@ -119,6 +246,7 @@
     .form-select {
       width: 100%; border: 1px solid #ddd; border-radius: 10px;
       padding: 10px 12px; font-size: 14px; background: white; outline: none;
+      font-family: 'Segoe UI', sans-serif;
     }
     .photos-grid {
       display: grid; grid-template-columns: repeat(5, 1fr);
@@ -131,13 +259,10 @@
       align-items: center; justify-content: center;
       cursor: pointer; overflow: hidden;
       position: relative; background: #FAFAFA;
-      transition: border-color 0.15s;
     }
     .photo-case:hover { border-color: #FF5C35; }
     .photo-case.remplie { border: none; }
-    .photo-case img {
-      width: 100%; height: 100%; object-fit: cover;
-    }
+    .photo-case img { width: 100%; height: 100%; object-fit: cover; }
     .photo-case .icone { font-size: 18px; }
     .photo-case .num { font-size: 9px; color: #ccc; margin-top: 2px; }
     .photo-case .btn-effacer {
@@ -158,9 +283,7 @@
     }
     .photo-case.premiere { border-color: #FF5C35; }
     .photo-case.premiere .icone { color: #FF5C35; }
-    .photos-hint {
-      font-size: 11px; color: #999; text-align: center; margin-bottom: 8px;
-    }
+    .photos-hint { font-size: 11px; color: #999; text-align: center; margin-bottom: 8px; }
     .upload-progress {
       display: none; text-align: center;
       font-size: 13px; color: #FF5C35; margin-top: 8px;
@@ -171,6 +294,7 @@
       font-size: 15px; font-weight: 600; cursor: pointer; margin-top: 6px;
     }
     .btn-publier:disabled { opacity: 0.6; cursor: not-allowed; }
+
     .toast {
       position: fixed; bottom: 90px; left: 50%;
       transform: translateX(-50%);
@@ -217,12 +341,19 @@
   <div class="hero">
     <h1>Achète & vends<br><span>sans prise de tête</span></h1>
     <p>Vêtements, bibelots, chaussures...<br>Publie en 30 secondes.</p>
-    <button class="btn-vendre" onclick="ouvrirModal()">Vendre un article</button>
+    <button class="btn-vendre" onclick="ouvrirModal('modal-pub')">Vendre un article</button>
   </div>
 
-  <div class="search">
-    <input type="text" placeholder="🔍  Rechercher un article..."
-      oninput="rechercherAnnonces(this.value)" />
+  <div class="search-bar">
+    <div class="search-wrap">
+      <span class="search-icon">🔍</span>
+      <input class="search-input" placeholder="Rechercher un article..."
+        oninput="rechercherAnnonces(this.value)" />
+    </div>
+    <button class="btn-filtre" id="btn-filtre" onclick="ouvrirModal('modal-filtres')">
+      ⚙️ Filtres
+      <span class="filtre-badge" id="filtre-badge" style="display:none">0</span>
+    </button>
   </div>
 
   <div class="categories">
@@ -235,15 +366,69 @@
     <button class="cat" onclick="filtrer(this, 'Chaussures')">Chaussures</button>
   </div>
 
-  <div class="section-title">Articles récents</div>
+  <div class="filtres-actifs" id="filtres-actifs"></div>
+
+  <div class="section-title">
+    <span>Articles récents</span>
+    <span class="nb-resultats" id="nb-resultats"></span>
+  </div>
   <div class="grille" id="grille">
     <div class="loading">Chargement...</div>
   </div>
 
-  <div class="modal-overlay" id="modal" onclick="fermerModal(event)">
+  <!-- MODAL FILTRES -->
+  <div class="modal-overlay" id="modal-filtres" onclick="fermerModal(event,'modal-filtres')">
     <div class="modal">
       <div class="modal-handle"></div>
-      <div class="modal-title">Publier une annonce</div>
+      <div class="modal-title">⚙️ Filtres avancés</div>
+
+      <div class="filtre-section">
+        <label class="filtre-label">💰 Prix</label>
+        <div class="prix-range">
+          <input class="prix-input" id="prix-min" type="number" placeholder="Min €" />
+          <span class="prix-sep">—</span>
+          <input class="prix-input" id="prix-max" type="number" placeholder="Max €" />
+        </div>
+      </div>
+
+      <div class="filtre-section">
+        <label class="filtre-label">🏷️ État de l'article</label>
+        <div class="chips" id="chips-etat">
+          <button class="chip" onclick="toggleChip(this,'etat','Neuf avec étiquette')">Neuf avec étiquette</button>
+          <button class="chip" onclick="toggleChip(this,'etat','Très bon état')">Très bon état</button>
+          <button class="chip" onclick="toggleChip(this,'etat','Bon état')">Bon état</button>
+          <button class="chip" onclick="toggleChip(this,'etat','Satisfaisant')">Satisfaisant</button>
+        </div>
+      </div>
+
+      <div class="filtre-section">
+        <label class="filtre-label">🔄 Trier par</label>
+        <div class="chips" id="chips-tri">
+          <button class="chip selected" onclick="toggleChipUnique(this,'tri','recent')">Plus récent</button>
+          <button class="chip" onclick="toggleChipUnique(this,'tri','prix-asc')">Prix croissant</button>
+          <button class="chip" onclick="toggleChipUnique(this,'tri','prix-desc')">Prix décroissant</button>
+        </div>
+      </div>
+
+      <div class="filtre-section">
+        <label class="filtre-label">📍 Localisation</label>
+        <input class="prix-input" id="filtre-loc" type="text"
+          placeholder="Ex : Toulouse"
+          style="width:100%;text-align:left;padding:10px 14px;" />
+      </div>
+
+      <div class="filtre-actions">
+        <button class="btn-reset" onclick="resetFiltres()">Réinitialiser</button>
+        <button class="btn-appliquer" onclick="appliquerFiltres()">Voir les résultats →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL PUBLIER -->
+  <div class="modal-overlay" id="modal-pub" onclick="fermerModal(event,'modal-pub')">
+    <div class="modal-pub modal">
+      <div class="modal-handle"></div>
+      <div class="modal-title-pub">Publier une annonce</div>
 
       <div class="form-group">
         <label class="form-label">Photos (10 max)</label>
@@ -273,6 +458,21 @@
           </select>
         </div>
       </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">État</label>
+          <select class="form-select" id="etat">
+            <option>Neuf avec étiquette</option>
+            <option>Très bon état</option>
+            <option>Bon état</option>
+            <option>Satisfaisant</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Localisation</label>
+          <input class="form-input" id="localisation" placeholder="Ex : Toulouse" />
+        </div>
+      </div>
       <div class="form-group">
         <label class="form-label">Description</label>
         <textarea class="form-input" id="description" rows="3"
@@ -293,7 +493,7 @@
     <button class="nav-item" onclick="window.location.href='messages.html'">
       <span class="nav-icon">💬</span><span>Messages</span>
     </button>
-    <button class="nav-vendre" onclick="ouvrirModal()">
+    <button class="nav-vendre" onclick="ouvrirModal('modal-pub')">
       <div class="cercle">＋</div>
       <span>Vendre</span>
     </button>
@@ -320,99 +520,135 @@
     }
 
     let toutesLesAnnonces = []
+    let categorieActive = 'tout'
+    let rechercheActive = ''
     const MAX_PHOTOS = 10
     let photos = new Array(MAX_PHOTOS).fill(null)
 
-    function initGrille() {
-      const grid = document.getElementById('photos-grid')
-      grid.innerHTML = ''
-      for (let i = 0; i < MAX_PHOTOS; i++) {
-        const div = document.createElement('div')
-        div.className = 'photo-case' + (i === 0 && !photos[i] ? ' premiere' : '')
-        div.id = 'case-' + i
+    let filtres = {
+      prixMin: null,
+      prixMax: null,
+      etats: [],
+      tri: 'recent',
+      localisation: ''
+    }
 
-        if (photos[i]) {
-          div.classList.add('remplie')
-          const rotation = photos[i].rotation || 0
-          div.innerHTML = `
-            <img src="${photos[i].preview}" alt="photo ${i+1}" id="img-${i}"
-              style="transform:rotate(${rotation}deg);transition:transform 0.3s;" />
-            <button class="btn-effacer"
-              onclick="event.stopPropagation();effacerPhoto(${i})">✕</button>
-            <button class="btn-rotation"
-              onclick="event.stopPropagation();tournerPhoto(${i})">↻</button>
-          `
+    function toggleChip(btn, type, valeur) {
+      btn.classList.toggle('selected')
+      if (type === 'etat') {
+        if (btn.classList.contains('selected')) {
+          filtres.etats.push(valeur)
         } else {
-          div.onclick = () => selectionnerPhoto(i)
-          div.innerHTML = `
-            <span class="icone">📷</span>
-            <span class="num">${i + 1}</span>
-          `
+          filtres.etats = filtres.etats.filter(e => e !== valeur)
         }
-        grid.appendChild(div)
       }
     }
 
-    function selectionnerPhoto(index) {
-      const input = document.createElement('input')
-      input.type = 'file'
-      input.accept = 'image/*'
-      input.onchange = (e) => {
-        const file = e.target.files[0]
-        if (!file) return
-        const reader = new FileReader()
-        reader.onload = ev => {
-          photos[index] = { file, preview: ev.target.result, rotation: 0 }
-          initGrille()
-        }
-        reader.readAsDataURL(file)
+    function toggleChipUnique(btn, type, valeur) {
+      document.querySelectorAll('#chips-tri .chip').forEach(c => c.classList.remove('selected'))
+      btn.classList.add('selected')
+      filtres.tri = valeur
+    }
+
+    function appliquerFiltres() {
+      filtres.prixMin = document.getElementById('prix-min').value ? parseFloat(document.getElementById('prix-min').value) : null
+      filtres.prixMax = document.getElementById('prix-max').value ? parseFloat(document.getElementById('prix-max').value) : null
+      filtres.localisation = document.getElementById('filtre-loc').value.trim().toLowerCase()
+      fermerModalDirect('modal-filtres')
+      appliquerTousFiltres()
+      mettreAjourBadge()
+      afficherFiltresActifs()
+    }
+
+    function resetFiltres() {
+      filtres = { prixMin: null, prixMax: null, etats: [], tri: 'recent', localisation: '' }
+      document.getElementById('prix-min').value = ''
+      document.getElementById('prix-max').value = ''
+      document.getElementById('filtre-loc').value = ''
+      document.querySelectorAll('.chip').forEach(c => c.classList.remove('selected'))
+      document.querySelector('#chips-tri .chip').classList.add('selected')
+      fermerModalDirect('modal-filtres')
+      appliquerTousFiltres()
+      mettreAjourBadge()
+      afficherFiltresActifs()
+    }
+
+    function mettreAjourBadge() {
+      let nb = 0
+      if (filtres.prixMin) nb++
+      if (filtres.prixMax) nb++
+      if (filtres.etats.length) nb++
+      if (filtres.localisation) nb++
+      const badge = document.getElementById('filtre-badge')
+      const btn = document.getElementById('btn-filtre')
+      if (nb > 0) {
+        badge.style.display = 'flex'
+        badge.textContent = nb
+        btn.classList.add('actif')
+      } else {
+        badge.style.display = 'none'
+        btn.classList.remove('actif')
       }
-      input.click()
     }
 
-    function effacerPhoto(index) {
-      photos[index] = null
-      initGrille()
+    function afficherFiltresActifs() {
+      const container = document.getElementById('filtres-actifs')
+      const tags = []
+      if (filtres.prixMin) tags.push({ label: `Min ${filtres.prixMin} €`, key: 'prixMin' })
+      if (filtres.prixMax) tags.push({ label: `Max ${filtres.prixMax} €`, key: 'prixMax' })
+      filtres.etats.forEach(e => tags.push({ label: e, key: 'etat', val: e }))
+      if (filtres.localisation) tags.push({ label: `📍 ${filtres.localisation}`, key: 'localisation' })
+      if (tags.length > 0) {
+        container.classList.add('visible')
+        container.innerHTML = tags.map(t => `
+          <div class="filtre-tag" onclick="supprimerFiltre('${t.key}','${t.val || ''}')">
+            ${t.label} <span>✕</span>
+          </div>
+        `).join('')
+      } else {
+        container.classList.remove('visible')
+        container.innerHTML = ''
+      }
     }
 
-    function tournerPhoto(index) {
-      if (!photos[index]) return
-      photos[index].rotation = ((photos[index].rotation || 0) + 90) % 360
-      const img = document.getElementById('img-' + index)
-      if (img) img.style.transform = `rotate(${photos[index].rotation}deg)`
+    function supprimerFiltre(key, val) {
+      if (key === 'prixMin') { filtres.prixMin = null; document.getElementById('prix-min').value = '' }
+      if (key === 'prixMax') { filtres.prixMax = null; document.getElementById('prix-max').value = '' }
+      if (key === 'etat') {
+        filtres.etats = filtres.etats.filter(e => e !== val)
+        document.querySelectorAll('#chips-etat .chip').forEach(c => {
+          if (c.textContent.trim() === val) c.classList.remove('selected')
+        })
+      }
+      if (key === 'localisation') { filtres.localisation = ''; document.getElementById('filtre-loc').value = '' }
+      appliquerTousFiltres()
+      mettreAjourBadge()
+      afficherFiltresActifs()
     }
 
-    async function uploadPhoto(photoObj) {
-      return new Promise((resolve) => {
-        const img = new Image()
-        img.onload = () => {
-          const canvas = document.createElement('canvas')
-          const rotation = photoObj.rotation || 0
-          if (rotation === 90 || rotation === 270) {
-            canvas.width = img.height
-            canvas.height = img.width
-          } else {
-            canvas.width = img.width
-            canvas.height = img.height
-          }
-          const ctx = canvas.getContext('2d')
-          ctx.translate(canvas.width / 2, canvas.height / 2)
-          ctx.rotate((rotation * Math.PI) / 180)
-          ctx.drawImage(img, -img.width / 2, -img.height / 2)
-          canvas.toBlob(async (blob) => {
-            const formData = new FormData()
-            formData.append('file', blob, 'photo.jpg')
-            formData.append('upload_preset', CLOUDINARY_PRESET)
-            const res = await fetch(
-              `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD}/image/upload`,
-              { method: 'POST', body: formData }
-            )
-            const data = await res.json()
-            resolve(data.secure_url)
-          }, 'image/jpeg', 0.9)
-        }
-        img.src = photoObj.preview
-      })
+    function appliquerTousFiltres() {
+      let resultats = [...toutesLesAnnonces]
+
+      if (categorieActive !== 'tout') {
+        resultats = resultats.filter(a => a.categorie === categorieActive)
+      }
+      if (rechercheActive) {
+        resultats = resultats.filter(a =>
+          a.titre.toLowerCase().includes(rechercheActive.toLowerCase())
+        )
+      }
+      if (filtres.prixMin) resultats = resultats.filter(a => a.prix >= filtres.prixMin)
+      if (filtres.prixMax) resultats = resultats.filter(a => a.prix <= filtres.prixMax)
+      if (filtres.etats.length) resultats = resultats.filter(a => filtres.etats.includes(a.etat))
+      if (filtres.localisation) {
+        resultats = resultats.filter(a =>
+          a.localisation && a.localisation.toLowerCase().includes(filtres.localisation)
+        )
+      }
+      if (filtres.tri === 'prix-asc') resultats.sort((a, b) => a.prix - b.prix)
+      if (filtres.tri === 'prix-desc') resultats.sort((a, b) => b.prix - a.prix)
+
+      afficherAnnonces(resultats)
     }
 
     async function verifierConnexion() {
@@ -438,15 +674,23 @@
         return
       }
       toutesLesAnnonces = data
-      afficherAnnonces(data)
+      appliquerTousFiltres()
       chargerFavoris()
     }
 
     function afficherAnnonces(annonces) {
       const grille = document.getElementById('grille')
+      const nb = document.getElementById('nb-resultats')
+      nb.textContent = annonces.length > 0 ? `${annonces.length} article${annonces.length > 1 ? 's' : ''}` : ''
       if (annonces.length === 0) {
-        grille.innerHTML = '<div class="loading">Aucune annonce pour le moment.<br>Sois le premier à vendre ! 🎉</div>'
+        grille.innerHTML = '<div class="loading">Aucun article trouvé 😕<br><small>Essaie d\'autres filtres</small></div>'
         return
+      }
+      const etatClass = {
+        'Neuf avec étiquette': 'etat-neuf',
+        'Très bon état': 'etat-bon',
+        'Bon état': 'etat-bon',
+        'Satisfaisant': 'etat-satisfaisant'
       }
       grille.innerHTML = annonces.map(a => {
         const premierephoto = (a.photos && a.photos.length > 0) ? a.photos[0] : a.photo
@@ -463,11 +707,15 @@
               🤍
             </button>
             ${nbPhotos > 1 ? `<span class="nb-photos">📷 ${nbPhotos}</span>` : ''}
+            ${a.etat ? `<span class="etat-badge ${etatClass[a.etat] || 'etat-satisfaisant'}">${a.etat}</span>` : ''}
           </div>
           <div class="article-info">
             <div class="article-nom">${a.titre}</div>
             <div class="article-taille">${a.vendeur} · ${a.categorie}</div>
-            <div class="article-prix">${a.prix} €</div>
+            <div class="article-bas">
+              <div class="article-prix">${a.prix} €</div>
+              ${a.localisation ? `<div class="article-loc">📍 ${a.localisation}</div>` : ''}
+            </div>
             <button class="btn-contacter"
               onclick="event.stopPropagation();contacterVendeur('${a.vendeur}','${a.titre}','${a.id}')">
               💬 Contacter
@@ -475,6 +723,99 @@
           </div>
         </div>`
       }).join('')
+    }
+
+    function filtrer(el, cat) {
+      document.querySelectorAll('.cat').forEach(c => c.classList.remove('active'))
+      el.classList.add('active')
+      categorieActive = cat
+      appliquerTousFiltres()
+    }
+
+    function rechercherAnnonces(q) {
+      rechercheActive = q
+      appliquerTousFiltres()
+    }
+
+    function initGrille() {
+      const grid = document.getElementById('photos-grid')
+      grid.innerHTML = ''
+      for (let i = 0; i < MAX_PHOTOS; i++) {
+        const div = document.createElement('div')
+        div.className = 'photo-case' + (i === 0 && !photos[i] ? ' premiere' : '')
+        div.id = 'case-' + i
+        if (photos[i]) {
+          div.classList.add('remplie')
+          const rotation = photos[i].rotation || 0
+          div.innerHTML = `
+            <img src="${photos[i].preview}" alt="photo ${i+1}" id="img-${i}"
+              style="transform:rotate(${rotation}deg);transition:transform 0.3s;" />
+            <button class="btn-effacer" onclick="event.stopPropagation();effacerPhoto(${i})">✕</button>
+            <button class="btn-rotation" onclick="event.stopPropagation();tournerPhoto(${i})">↻</button>
+          `
+        } else {
+          div.onclick = () => selectionnerPhoto(i)
+          div.innerHTML = `<span class="icone">📷</span><span class="num">${i + 1}</span>`
+        }
+        grid.appendChild(div)
+      }
+    }
+
+    function selectionnerPhoto(index) {
+      const input = document.createElement('input')
+      input.type = 'file'
+      input.accept = 'image/*'
+      input.onchange = (e) => {
+        const file = e.target.files[0]
+        if (!file) return
+        const reader = new FileReader()
+        reader.onload = ev => {
+          photos[index] = { file, preview: ev.target.result, rotation: 0 }
+          initGrille()
+        }
+        reader.readAsDataURL(file)
+      }
+      input.click()
+    }
+
+    function effacerPhoto(index) { photos[index] = null; initGrille() }
+
+    function tournerPhoto(index) {
+      if (!photos[index]) return
+      photos[index].rotation = ((photos[index].rotation || 0) + 90) % 360
+      const img = document.getElementById('img-' + index)
+      if (img) img.style.transform = `rotate(${photos[index].rotation}deg)`
+    }
+
+    async function uploadPhoto(photoObj) {
+      return new Promise((resolve) => {
+        const img = new Image()
+        img.onload = () => {
+          const canvas = document.createElement('canvas')
+          const rotation = photoObj.rotation || 0
+          if (rotation === 90 || rotation === 270) {
+            canvas.width = img.height; canvas.height = img.width
+          } else {
+            canvas.width = img.width; canvas.height = img.height
+          }
+          const ctx = canvas.getContext('2d')
+          ctx.translate(canvas.width / 2, canvas.height / 2)
+          ctx.rotate((rotation * Math.PI) / 180)
+          ctx.drawImage(img, -img.width / 2, -img.height / 2)
+          canvas.toBlob(async (blob) => {
+            const formData = new FormData()
+            formData.append('file', blob, 'photo.jpg')
+            formData.append('upload_preset', CLOUDINARY_PRESET)
+            const res = await fetch(
+              `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD}/image/upload`,
+              { method: 'POST', body: formData }
+            )
+            const data = await res.json()
+            resolve(data.secure_url)
+          }, 'image/jpeg', 0.9)
+        }
+        img.src = photoObj.preview
+      })
     }
 
     async function chargerFavoris() {
@@ -499,8 +840,7 @@
         .select('id').eq('utilisateur', prenom).eq('annonce_id', id)
       if (existants && existants.length > 0) {
         await db.from('favoris').delete().eq('id', existants[0].id)
-        btn.textContent = '🤍'
-        afficherToast('Retiré des favoris')
+        btn.textContent = '🤍'; afficherToast('Retiré des favoris')
       } else {
         await db.from('favoris').insert([{
           utilisateur: prenom, annonce_id: id,
@@ -508,8 +848,7 @@
           annonce_photo: photo || null, annonce_emoji: emoji || null,
           annonce_vendeur: vendeur, annonce_categorie: categorie
         }])
-        btn.textContent = '❤️'
-        afficherToast('❤️ Ajouté aux favoris !')
+        btn.textContent = '❤️'; afficherToast('❤️ Ajouté aux favoris !')
       }
     }
 
@@ -518,40 +857,20 @@
       window.location.href = 'messages.html?' + params.toString()
     }
 
-    function filtrer(el, cat) {
-      document.querySelectorAll('.cat').forEach(c => c.classList.remove('active'))
-      el.classList.add('active')
-      const filtrees = cat === 'tout'
-        ? toutesLesAnnonces
-        : toutesLesAnnonces.filter(a => a.categorie === cat)
-      afficherAnnonces(filtrees)
-    }
-
-    function rechercherAnnonces(q) {
-      const filtrees = toutesLesAnnonces.filter(a =>
-        a.titre.toLowerCase().includes(q.toLowerCase())
-      )
-      afficherAnnonces(filtrees)
-    }
-
     async function publierAnnonce() {
       const titre = document.getElementById('titre').value.trim()
       const prix = document.getElementById('prix').value
       const categorie = document.getElementById('categorie').value
+      const etat = document.getElementById('etat').value
+      const localisation = document.getElementById('localisation').value.trim()
       const description = document.getElementById('description').value.trim()
       const btn = document.getElementById('btn-publier')
 
       const { data: { user } } = await db.auth.getUser()
-      if (!user) {
-        afficherToast('⚠️ Connecte-toi pour publier une annonce !')
-        return
-      }
+      if (!user) { afficherToast('⚠️ Connecte-toi pour publier une annonce !'); return }
       const vendeur = user.user_metadata?.prenom || user.email
 
-      if (!titre || !prix) {
-        afficherToast('⚠️ Remplis le titre et le prix !')
-        return
-      }
+      if (!titre || !prix) { afficherToast('⚠️ Remplis le titre et le prix !'); return }
 
       btn.disabled = true
       btn.textContent = 'Publication...'
@@ -571,9 +890,8 @@
       }
 
       const { error } = await db.from('Annonces').insert([{
-        titre, prix: parseFloat(prix), categorie,
-        description, vendeur,
-        emoji: emojis[categorie],
+        titre, prix: parseFloat(prix), categorie, etat, localisation,
+        description, vendeur, emoji: emojis[categorie],
         photo: photosUrls[0] || null,
         photos: photosUrls.length > 0 ? photosUrls : null
       }])
@@ -581,30 +899,30 @@
       btn.disabled = false
       btn.textContent = 'Publier gratuitement →'
 
-      if (error) {
-        afficherToast('❌ Erreur lors de la publication')
-        return
-      }
+      if (error) { afficherToast('❌ Erreur lors de la publication'); return }
 
       afficherToast('✅ Annonce publiée !')
-      document.getElementById('modal').classList.remove('open')
+      fermerModalDirect('modal-pub')
       document.getElementById('titre').value = ''
       document.getElementById('prix').value = ''
       document.getElementById('description').value = ''
+      document.getElementById('localisation').value = ''
       photos = new Array(MAX_PHOTOS).fill(null)
       initGrille()
       chargerAnnonces()
     }
 
-    function ouvrirModal() {
-      document.getElementById('modal').classList.add('open')
-      initGrille()
+    function ouvrirModal(id) {
+      document.getElementById(id).classList.add('open')
+      if (id === 'modal-pub') initGrille()
     }
 
-    function fermerModal(e) {
-      if (e.target === document.getElementById('modal')) {
-        document.getElementById('modal').classList.remove('open')
-      }
+    function fermerModal(e, id) {
+      if (e.target === document.getElementById(id)) fermerModalDirect(id)
+    }
+
+    function fermerModalDirect(id) {
+      document.getElementById(id).classList.remove('open')
     }
 
     function afficherToast(msg) {
