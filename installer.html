@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fripiz – Installer l'application</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Segoe UI', sans-serif; background: #F7F5F2; color: #1A1A1A; }
+    header {
+      background: white; padding: 16px 20px;
+      display: flex; align-items: center;
+      gap: 12px; border-bottom: 1px solid #eee;
+      position: sticky; top: 0; z-index: 100;
+    }
+    .btn-retour { background: none; border: none; font-size: 22px; cursor: pointer; }
+    .logo { font-size: 20px; font-weight: 700; color: #FF5C35; }
+    .logo span { color: #1A1A1A; }
+
+    .hero {
+      background: linear-gradient(135deg, #FF5C35, #FF8C35);
+      padding: 40px 20px; text-align: center; color: white;
+    }
+    .hero-icon {
+      width: 80px; height: 80px; background: white;
+      border-radius: 20px; margin: 0 auto 16px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 40px; box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+    }
+    .hero h1 { font-size: 24px; font-weight: 700; margin-bottom: 8px; }
+    .hero p { font-size: 14px; opacity: 0.9; line-height: 1.6; }
+
+    .detect-banner {
+      background: white; margin: 16px;
+      border-radius: 14px; padding: 16px;
+      border: 1px solid #eee; text-align: center;
+      display: none;
+    }
+    .detect-banner.visible { display: block; }
+    .detect-title { font-size: 14px; font-weight: 700; margin-bottom: 8px; }
+    .detect-text { font-size: 13px; color: #666; margin-bottom: 12px; }
+    .btn-installer {
+      background: #FF5C35; color: white;
+      border: none; border-radius: 12px;
+      padding: 12px 24px; font-size: 14px;
+      font-weight: 600; cursor: pointer;
+      font-family: 'Segoe UI', sans-serif;
+      width: 100%;
+    }
+
+    .section { padding: 20px 16px; }
+    .section-title {
+      font-size: 18px; font-weight: 700;
+      margin-bottom: 16px;
+    }
+
+    .device-tabs {
+      display: flex; gap: 8px; margin-bottom: 20px;
+    }
+    .device-tab {
+      flex: 1; padding: 10px;
+      background: white; border: 1.5px solid #eee;
+      border-radius: 12px; font-size: 13px;
+      font-weight: 600; cursor: pointer; text-align: center;
+      font-family: 'Segoe UI', sans-serif;
+      transition: all 0.15s;
+    }
+    .device-tab.active {
+      background: #FF5C35; color: white;
+      border-color: #FF5C35;
+    }
+
+    .device-content { display: none; }
+    .device-content.active { display: block; }
+
+    .steps { display: flex; flex-direction: column; gap: 12px; }
+    .step {
+      background: white; border-radius: 14px;
+      padding: 16px; border: 1px solid #eee;
+      display: flex; gap: 14px; align-items: flex-start;
+    }
+    .step-num {
+      width: 32px; height: 32px; border-radius: 50%;
+      background: #FF5C35; color: white;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px; font-weight: 700; flex-shrink: 0;
+    }
+    .step-content { flex: 1; }
+    .step-title { font-size: 14px; font-weight: 700; margin-bottom: 4px; }
+    .step-desc { font-size: 13px; color: #666; line-height: 1.5; }
+    .step-img {
+      background: #F0EDE8; border-radius: 10px;
+      padding: 12px; margin-top: 10px;
+      text-align: center; font-size: 28px;
+    }
+    .step-img p { font-size: 11px; color: #999; margin-top: 6px; }
+
+    .avantages {
+      display: grid; grid-template-columns: repeat(2, 1fr);
+      gap: 10px; margin-top: 8px;
+    }
+    .avantage {
+      background: white; border-radius: 12px;
+      padding: 14px; border: 1px solid #eee;
+      text-align: center;
+    }
+    .avantage-icon { font-size: 28px; margin-bottom: 6px; }
+    .avantage-titre { font-size: 13px; font-weight: 700; margin-bottom: 4px; }
+    .avantage-desc { font-size: 11px; color: #999; }
+
+    .faq { padding: 0 16px 100px; }
+    .faq-title { font-size: 18px; font-weight: 700; margin-bottom: 16px; }
+    .faq-item {
+      background: white; border-radius: 12px;
+      border: 1px solid #eee; margin-bottom: 8px;
+      overflow: hidden;
+    }
+    .faq-question {
+      padding: 14px 16px;
+      display: flex; align-items: center;
+      justify-content: space-between;
+      cursor: pointer; font-size: 14px; font-weight: 600;
+    }
+    .faq-chevron { font-size: 12px; color: #999; transition: transform 0.2s; }
+    .faq-chevron.open { transform: rotate(180deg); }
+    .faq-reponse {
+      display: none; padding: 0 16px 14px;
+      font-size: 13px; color: #666; line-height: 1.6;
+    }
+    .faq-reponse.open { display: block; }
+
+    .bottom-nav {
+      position: fixed; bottom: 0; left: 0; right: 0;
+      background: white; border-top: 1px solid #eee;
+      display: flex; padding: 10px 0 20px;
+    }
+    .nav-item {
+      flex: 1; display: flex; flex-direction: column;
+      align-items: center; gap: 3px;
+      background: none; border: none;
+      font-size: 10px; color: #999; cursor: pointer;
+    }
+    .nav-item.active { color: #FF5C35; }
+    .nav-icon { font-size: 22px; }
+    .nav-vendre {
+      flex: 1; display: flex; flex-direction: column;
+      align-items: center; gap: 3px;
+      background: none; border: none; cursor: pointer;
+    }
+    .nav-vendre .cercle {
+      width: 48px; height: 48px; background: #FF5C35;
+      border-radius: 50%; display: flex;
+      align-items: center; justify-content: center;
+      font-size: 26px; color: white; margin-top: -18px;
+    }
+    .nav-vendre span { font-size: 10px; color: #FF5C35; font-weight: 600; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <button class="btn-retour" onclick="window.location.href='index.html'">←</button>
+    <div class="logo">Frip<span>iz</span></div>
+  </header>
+
+  <div class="hero">
+    <div class="hero-icon">👗</div>
+    <h1>Installe Fripiz sur ton téléphone</h1>
+    <p>Accède à Fripiz en un clic depuis ton écran d'accueil,<br>comme une vraie application !</p>
+  </div>
+
+  <!-- BANNIÈRE INSTALLATION AUTO (Chrome Android) -->
+  <div class="detect-banner" id="detect-banner">
+    <div class="detect-title">📱 Installe Fripiz maintenant !</div>
+    <div class="detect-text">Ton navigateur propose l'installation directe — c'est gratuit et rapide !</div>
+    <button class="btn-installer" id="btn-installer-auto">
+      ⬇️ Installer Fripiz gratuitement
+    </button>
+  </div>
+
+  <!-- AVANTAGES -->
+  <div class="section">
+    <div class="section-title">Pourquoi installer l'app ?</div>
+    <div class="avantages">
+      <div class="avantage">
+        <div class="avantage-icon">⚡</div>
+        <div class="avantage-titre">Plus rapide</div>
+        <div class="avantage-desc">Chargement instantané</div>
+      </div>
+      <div class="avantage">
+        <div class="avantage-icon">📴</div>
+        <div class="avantage-titre">Hors ligne</div>
+        <div class="avantage-desc">Fonctionne sans internet</div>
+      </div>
+      <div class="avantage">
+        <div class="avantage-icon">🔔</div>
+        <div class="avantage-titre">Notifications</div>
+        <div class="avantage-desc">Alertes messages & offres</div>
+      </div>
+      <div class="avantage">
+        <div class="avantage-icon">💾</div>
+        <div class="avantage-titre">Gratuit</div>
+        <div class="avantage-desc">Pas d'App Store</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- GUIDE PAR APPAREIL -->
+  <div class="section">
+    <div class="section-title">Guide d'installation</div>
+    <div class="device-tabs">
+      <button class="device-tab active" onclick="afficherAppareil('android')">🤖 Android</button>
+      <button class="device-tab" onclick="afficherAppareil('iphone')">🍎 iPhone</button>
+      <button class="device-tab" onclick="afficherAppareil('pc')">💻 PC/Mac</button>
+    </div>
+
+    <!-- ANDROID -->
+    <div class="device-content active" id="content-android">
+      <div class="steps">
+        <div class="step">
+          <div class="step-num">1</div>
+          <div class="step-content">
+            <div class="step-title">Ouvre Chrome sur ton Android</div>
+            <div class="step-desc">Assure-toi d'utiliser Google Chrome — c'est le navigateur qui supporte l'installation.</div>
+            <div class="step-img">🌐<p>Google Chrome</p></div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">2</div>
+          <div class="step-content">
+            <div class="step-title">Va sur le site Fripiz</div>
+            <div class="step-desc">Tape l'adresse du site dans la barre de recherche de Chrome.</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">3</div>
+          <div class="step-content">
+            <div class="step-title">Appuie sur les 3 points ⋮</div>
+            <div class="step-desc">En haut à droite de Chrome, appuie sur les trois points verticaux pour ouvrir le menu.</div>
+            <div class="step-img">⋮<p>Menu Chrome en haut à droite</p></div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">4</div>
+          <div class="step-content">
+            <div class="step-title">Clique sur "Ajouter à l'écran d'accueil"</div>
+            <div class="step-desc">Dans le menu qui s'ouvre, cherche l'option "Ajouter à l'écran d'accueil" ou "Installer l'application".</div>
+            <div class="step-img">📲<p>"Ajouter à l'écran d'accueil"</p></div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">5</div>
+          <div class="step-content">
+            <div class="step-title">Confirme l'installation</div>
+            <div class="step-desc">Une fenêtre apparaît avec le nom "Fripiz" — appuie sur "Ajouter" pour confirmer.</div>
+            <div class="step-img">✅<p>Fripiz est installé !</p></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- IPHONE -->
+    <div class="device-content" id="content-iphone">
+      <div class="steps">
+        <div class="step">
+          <div class="step-num">1</div>
+          <div class="step-content">
+            <div class="step-title">Ouvre Safari sur ton iPhone</div>
+            <div class="step-desc">⚠️ Important : utilise Safari et non Chrome — seul Safari permet l'installation sur iPhone.</div>
+            <div class="step-img">🧭<p>Safari (navigateur Apple)</p></div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">2</div>
+          <div class="step-content">
+            <div class="step-title">Va sur le site Fripiz</div>
+            <div class="step-desc">Tape l'adresse du site dans la barre Safari en haut de l'écran.</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">3</div>
+          <div class="step-content">
+            <div class="step-title">Appuie sur le bouton Partager</div>
+            <div class="step-desc">En bas de l'écran, appuie sur l'icône avec une flèche vers le haut (bouton Partager).</div>
+            <div class="step-img">⬆️<p>Bouton Partager en bas de Safari</p></div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">4</div>
+          <div class="step-content">
+            <div class="step-title">Appuie sur "Sur l'écran d'accueil"</div>
+            <div class="step-desc">Dans le menu qui s'ouvre, fais défiler vers le bas et appuie sur "Sur l'écran d'accueil".</div>
+            <div class="step-img">🏠<p>"Sur l'écran d'accueil"</p></div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">5</div>
+          <div class="step-content">
+            <div class="step-title">Appuie sur "Ajouter"</div>
+            <div class="step-desc">En haut à droite de l'écran, appuie sur "Ajouter" — Fripiz apparaît sur ton écran d'accueil !</div>
+            <div class="step-img">✅<p>Fripiz est installé !</p></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PC/MAC -->
+    <div class="device-content" id="content-pc">
+      <div class="steps">
+        <div class="step">
+          <div class="step-num">1</div>
+          <div class="step-content">
+            <div class="step-title">Ouvre Chrome ou Edge</div>
+            <div class="step-desc">L'installation fonctionne avec Google Chrome ou Microsoft Edge sur PC et Mac.</div>
+            <div class="step-img">🌐<p>Chrome ou Edge</p></div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">2</div>
+          <div class="step-content">
+            <div class="step-title">Va sur le site Fripiz</div>
+            <div class="step-desc">Ouvre le site dans ton navigateur.</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">3</div>
+          <div class="step-content">
+            <div class="step-title">Clique sur l'icône d'installation</div>
+            <div class="step-desc">Dans la barre d'adresse en haut à droite, tu verras une icône ⊕ ou un écran avec une flèche — clique dessus.</div>
+            <div class="step-img">⊕<p>Icône dans la barre d'adresse</p></div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">4</div>
+          <div class="step-content">
+            <div class="step-title">Clique sur "Installer"</div>
+            <div class="step-desc">Une fenêtre apparaît — clique sur "Installer" et Fripiz s'ouvre comme une application de bureau !</div>
+            <div class="step-img">✅<p>Fripiz installé sur ton PC !</p></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FAQ -->
+  <div class="faq">
+    <div class="faq-title">Questions fréquentes</div>
+
+    <div class="faq-item">
+      <div class="faq-question" onclick="toggleFaq(this)">
+        C'est vraiment gratuit ?
+        <span class="faq-chevron">▼</span>
+      </div>
+      <div class="faq-reponse">
+        Oui, 100% gratuit ! Pas d'App Store, pas d'abonnement. L'installation se fait directement depuis ton navigateur en quelques secondes.
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-question" onclick="toggleFaq(this)">
+        Ça prend de la place sur mon téléphone ?
+        <span class="faq-chevron">▼</span>
+      </div>
+      <div class="faq-reponse">
+        Très peu ! Moins de 1 Mo contrairement aux vraies applications qui peuvent prendre plusieurs centaines de Mo. C'est l'un des grands avantages des PWA.
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-question" onclick="toggleFaq(this)">
+        Comment désinstaller Fripiz ?
+        <span class="faq-chevron">▼</span>
+      </div>
+      <div class="faq-reponse">
+        Comme n'importe quelle app — appuie longuement sur l'icône Fripiz sur ton écran d'accueil et choisis "Supprimer" ou "Désinstaller".
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-question" onclick="toggleFaq(this)">
+        Fonctionne-t-il sans internet ?
+        <span class="faq-chevron">▼</span>
+      </div>
+      <div class="faq-reponse">
+        Partiellement ! Les pages déjà visitées sont disponibles hors ligne. Pour voir les nouvelles annonces et envoyer des messages, une connexion internet est nécessaire.
+      </div>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-question" onclick="toggleFaq(this)">
+        Pourquoi je ne vois pas l'option sur iPhone ?
+        <span class="faq-chevron">▼</span>
+      </div>
+      <div class="faq-reponse">
+        Sur iPhone, l'installation ne fonctionne qu'avec Safari. Si tu utilises Chrome ou Firefox sur iPhone, change de navigateur et recommence.
+      </div>
+    </div>
+  </div>
+
+  <nav class="bottom-nav">
+    <button class="nav-item" onclick="window.location.href='index.html'">
+      <span class="nav-icon">🏠</span><span>Accueil</span>
+    </button>
+    <button class="nav-item" onclick="window.location.href='messages.html'">
+      <span class="nav-icon">💬</span><span>Messages</span>
+    </button>
+    <button class="nav-vendre" onclick="window.location.href='index.html'">
+      <div class="cercle">＋</div>
+      <span>Vendre</span>
+    </button>
+    <button class="nav-item" onclick="window.location.href='favoris.html'">
+      <span class="nav-icon">❤️</span><span>Favoris</span>
+    </button>
+    <button class="nav-item" onclick="window.location.href='profil.html'">
+      <span class="nav-icon">👤</span><span>Profil</span>
+    </button>
+  </nav>
+
+  <script>
+    let deferredPrompt = null
+
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault()
+      deferredPrompt = e
+      document.getElementById('detect-banner').classList.add('visible')
+    })
+
+    document.getElementById('btn-installer-auto').addEventListener('click', async () => {
+      if (deferredPrompt) {
+        deferredPrompt.prompt()
+        const { outcome } = await deferredPrompt.userChoice
+        if (outcome === 'accepted') {
+          document.getElementById('detect-banner').style.display = 'none'
+        }
+        deferredPrompt = null
+      }
+    })
+
+    function afficherAppareil(appareil) {
+      document.querySelectorAll('.device-tab').forEach(t => t.classList.remove('active'))
+      document.querySelectorAll('.device-content').forEach(c => c.classList.remove('active'))
+      event.target.classList.add('active')
+      document.getElementById('content-' + appareil).classList.add('active')
+    }
+
+    function toggleFaq(el) {
+      const reponse = el.nextElementSibling
+      const chevron = el.querySelector('.faq-chevron')
+      reponse.classList.toggle('open')
+      chevron.classList.toggle('open')
+    }
+  </script>
+
+</body>
+</html>
