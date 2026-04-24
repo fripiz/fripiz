@@ -299,20 +299,46 @@
     }
 
     async function envoyerMessage() {
-      const input = document.getElementById('msg-input')
-      const contenu = input.value.trim()
-      if (!contenu) return
-      input.value = ''
+  const input = document.getElementById('msg-input')
+  const contenu = input.value.trim()
+  if (!contenu) return
+  input.value = ''
 
-      await db.from('messages').insert([{
-        contenu,
-        expediteur: monPrenom,
-        destinataire: convActive.autre,
-        annonce_titre: convActive.annoncetitre || null
-      }])
+  await db.from('messages').insert([{
+    contenu,
+    expediteur: monPrenom,
+    destinataire: convActive.autre,
+    annonce_titre: convActive.annoncetitre || null
+  }])
 
-      chargerMessages()
+  chargerMessages()
+
+  try {
+    const { data: emailData } = await db.rpc('get_user_email', {
+      prenom_utilisateur: convActive.autre
+    })
+    if (emailData) {
+      await fetch('https://milpcxrfvufgqyukjyep.supabase.co/functions/v1/swift-action', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1pbHBjeHJmdnVmZ3F5dWtqeWVwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY2ODk3NzgsImV4cCI6MjA5MjI2NTc3OH0.TUh3kxzmjlQX38naPqQvJ6hpyNzPbi1fUoILuXKDZ9Q`
+        },
+        body: JSON.stringify({
+          destinataire: emailData,
+          type: 'message',
+          expediteur: monPrenom,
+          details: {
+            contenu,
+            annonce: convActive.annoncetitre || ''
+          }
+        })
+      })
     }
+  } catch (e) {
+    console.log('Email non envoyé:', e)
+  }
+}
 
     function afficherListe() {
       document.getElementById('vue-liste').style.display = 'block'

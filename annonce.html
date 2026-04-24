@@ -537,10 +537,37 @@
     }
 
     async function repondreOffre(offreId, statut) {
-      await db.from('offres').update({ statut }).eq('id', offreId)
-      afficherToast(statut === 'accepte' ? '✅ Offre acceptée !' : '❌ Offre refusée')
-      chargerOffres()
+  const { data: offre } = await db.from('offres').select('*').eq('id', offreId).single()
+  await db.from('offres').update({ statut }).eq('id', offreId)
+  afficherToast(statut === 'accepte' ? '✅ Offre acceptée !' : '❌ Offre refusée')
+  chargerOffres()
+
+  try {
+    const { data: emailData } = await db.rpc('get_user_email', {
+      prenom_utilisateur: offre.acheteur
+    })
+    if (emailData && offre) {
+      await fetch('https://milpcxrfvufgqyukjyep.supabase.co/functions/v1/swift-action', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1pbHBjeHJmdnVmZ3F5dWtqeWVwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY2ODk3NzgsImV4cCI6MjA5MjI2NTc3OH0.TUh3kxzmjlQX38naPqQvJ6hpyNzPbi1fUoILuXKDZ9Q`
+        },
+        body: JSON.stringify({
+          destinataire: emailData,
+          type: statut === 'accepte' ? 'offre_acceptee' : 'offre_refusee',
+          expediteur: monPrenom,
+          details: {
+            prix_propose: offre.prix_propose,
+            annonce: offre.annonce_titre
+          }
+        })
+      })
     }
+  } catch (e) {
+    console.log('Email non envoyé:', e)
+  }
+}
 
     function ouvrirOffre() {
       if (!monPrenom) { afficherToast('⚠️ Connecte-toi pour faire une offre !'); return }
@@ -550,23 +577,54 @@
     }
 
     async function envoyerOffre() {
-      const prixPropose = parseFloat(document.getElementById('offre-input').value)
-      if (!prixPropose || prixPropose <= 0) { afficherToast('⚠️ Entre un prix valide !'); return }
-      if (prixPropose >= annonce.prix) { afficherToast('⚠️ Ton offre doit être inférieure au prix !'); return }
-      const btn = document.getElementById('btn-offre')
-      btn.disabled = true
-      btn.textContent = 'Envoi...'
-      const { error } = await db.from('offres').insert([{
-        annonce_id: annonce.id, annonce_titre: annonce.titre,
-        acheteur: monPrenom, vendeur: annonce.vendeur,
-        prix_propose: prixPropose, prix_original: annonce.prix, statut: 'en attente'
-      }])
-      btn.disabled = false
-      btn.textContent = 'Envoyer mon offre →'
-      if (error) { afficherToast('❌ Erreur lors de l\'envoi'); return }
-      document.getElementById('modal-offre').classList.remove('open')
-      afficherToast('✅ Offre envoyée au vendeur !')
+  const prixPropose = parseFloat(document.getElementById('offre-input').value)
+  if (!prixPropose || prixPropose <= 0) { afficherToast('⚠️ Entre un prix valide !'); return }
+  if (prixPropose >= annonce.prix) { afficherToast('⚠️ Ton offre doit être inférieure au prix !'); return }
+  const btn = document.getElementById('btn-offre')
+  btn.disabled = true
+  btn.textContent = 'Envoi...'
+
+  const { error } = await db.from('offres').insert([{
+    annonce_id: annonce.id, annonce_titre: annonce.titre,
+    acheteur: monPrenom, vendeur: annonce.vendeur,
+    prix_propose: prixPropose, prix_original: annonce.prix, statut: 'en attente'
+  }])
+
+  btn.disabled = false
+  btn.textContent = 'Envoyer mon offre →'
+  if (error) { afficherToast('❌ Erreur lors de l\'envoi'); return }
+
+  document.getElementById('modal-offre').classList.remove('open')
+  afficherToast('✅ Offre envoyée au vendeur !')
+
+  try {
+    const { data: emailData } = await db.rpc('get_user_email', {
+      prenom_utilisateur: annonce.vendeur
+    })
+    if (emailData) {
+      await fetch('https://milpcxrfvufgqyukjyep.supabase.co/functions/v1/swift-action', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1pbHBjeHJmdnVmZ3F5dWtqeWVwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY2ODk3NzgsImV4cCI6MjA5MjI2NTc3OH0.TUh3kxzmjlQX38naPqQvJ6hpyNzPbi1fUoILuXKDZ9Q`
+        },
+        body: JSON.stringify({
+          destinataire: emailData,
+          type: 'offre',
+          expediteur: monPrenom,
+          details: {
+            prix_propose: prixPropose,
+            prix_original: annonce.prix,
+            annonce: annonce.titre,
+            annonce_id: annonce.id
+          }
+        })
+      })
     }
+  } catch (e) {
+    console.log('Email non envoyé:', e)
+  }
+}
 
     function ouvrirSignalement() {
       if (!monPrenom) {

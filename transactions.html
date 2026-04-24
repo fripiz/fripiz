@@ -470,7 +470,28 @@
       document.getElementById('modal-litige').classList.remove('open')
       afficherToast('🚨 Litige ouvert ! Nous allons examiner votre demande.')
       chargerTransactions()
+   try {
+    const { data: emailVendeur } = await db.rpc('get_user_email', {
+      prenom_utilisateur: transaction?.vendeur
+    })
+    if (emailVendeur) {
+      await fetch('https://milpcxrfvufgqyukjyep.supabase.co/functions/v1/swift-action', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1pbHBjeHJmdnVmZ3F5dWtqeWVwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY2ODk3NzgsImV4cCI6MjA5MjI2NTc3OH0.TUh3kxzmjlQX38naPqQvJ6hpyNzPbi1fUoILuXKDZ9Q`
+        },
+        body: JSON.stringify({
+          destinataire: emailVendeur,
+          type: 'litige',
+          expediteur: monPrenom,
+          details: { raison: raison + ' — ' + description }
+        })
+      })
     }
+  } catch (e) {
+    console.log('Email non envoyé:', e)
+  } }
 
     function contacter(autre, titre, id) {
       const params = new URLSearchParams({ autre, titre, id })
