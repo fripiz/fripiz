@@ -37,8 +37,6 @@
       padding: 14px 32px; border-radius: 30px;
       font-size: 15px; font-weight: 600; cursor: pointer;
     }
-
-    /* BARRE RECHERCHE + FILTRE */
     .search-bar {
       padding: 0 16px 12px;
       display: flex; gap: 8px; align-items: center;
@@ -73,7 +71,6 @@
       font-weight: 700; border: 2px solid white;
     }
     .btn-filtre.actif .filtre-badge { background: white; color: #FF5C35; }
-
     .categories {
       display: flex; gap: 10px; overflow-x: auto;
       padding: 0 16px 16px; scrollbar-width: none;
@@ -86,8 +83,6 @@
       font-family: 'Segoe UI', sans-serif;
     }
     .cat.active { background: #FF5C35; color: white; border-color: #FF5C35; }
-
-    /* FILTRES ACTIFS */
     .filtres-actifs {
       display: none; gap: 8px; overflow-x: auto;
       padding: 0 16px 12px; scrollbar-width: none;
@@ -102,8 +97,6 @@
       display: flex; align-items: center; gap: 6px;
       cursor: pointer;
     }
-    .filtre-tag span { font-size: 14px; }
-
     .section-title {
       font-size: 18px; font-weight: 700;
       padding: 0 16px 12px;
@@ -111,7 +104,6 @@
       justify-content: space-between;
     }
     .nb-resultats { font-size: 13px; color: #999; font-weight: 400; }
-
     .grille {
       display: grid; grid-template-columns: repeat(2, 1fr);
       gap: 12px; padding: 0 12px 100px;
@@ -149,12 +141,10 @@
     .etat-bon { background: #FFF4E5; color: #9A5C00; }
     .etat-satisfaisant { background: #F0F0F0; color: #555; }
     .article-info { padding: 10px 12px; }
+    .article-marque { font-size: 11px; color: #FF5C35; font-weight: 600; margin-bottom: 2px; }
     .article-nom { font-size: 13px; font-weight: 600; margin-bottom: 2px; }
     .article-taille { font-size: 11px; color: #999; margin-bottom: 6px; }
-    .article-bas {
-      display: flex; align-items: center;
-      justify-content: space-between;
-    }
+    .article-bas { display: flex; align-items: center; justify-content: space-between; }
     .article-prix { font-size: 16px; font-weight: 700; }
     .article-loc { font-size: 10px; color: #bbb; }
     .btn-contacter {
@@ -165,8 +155,6 @@
       font-weight: 600; cursor: pointer;
     }
     .loading { text-align: center; padding: 40px; color: #999; font-size: 14px; }
-
-    /* MODAL FILTRES */
     .modal-overlay {
       display: none; position: fixed; inset: 0;
       background: rgba(0,0,0,0.4); z-index: 200;
@@ -183,62 +171,7 @@
       width: 36px; height: 4px; background: #E0E0E0;
       border-radius: 2px; margin: 0 auto 16px;
     }
-    .modal-title { font-size: 18px; font-weight: 700; margin-bottom: 20px; }
-    .filtre-section { margin-bottom: 20px; }
-    .filtre-label {
-      font-size: 13px; font-weight: 700;
-      color: #1A1A1A; margin-bottom: 10px; display: block;
-    }
-    .prix-range {
-      display: flex; gap: 10px; align-items: center;
-    }
-    .prix-input {
-      flex: 1; border: 1.5px solid #eee;
-      border-radius: 10px; padding: 10px 12px;
-      font-size: 14px; outline: none;
-      font-family: 'Segoe UI', sans-serif;
-      text-align: center;
-    }
-    .prix-input:focus { border-color: #FF5C35; }
-    .prix-sep { color: #999; font-size: 14px; }
-    .chips {
-      display: flex; gap: 8px; flex-wrap: wrap;
-    }
-    .chip {
-      padding: 8px 16px; border-radius: 20px;
-      border: 1.5px solid #eee; background: white;
-      font-size: 13px; cursor: pointer;
-      font-family: 'Segoe UI', sans-serif;
-      transition: all 0.15s;
-    }
-    .chip.selected {
-      background: #FF5C35; color: white;
-      border-color: #FF5C35;
-    }
-    .filtre-actions {
-      display: flex; gap: 10px; margin-top: 8px;
-    }
-    .btn-reset {
-      flex: 1; background: #F0F0F0; color: #555;
-      border: none; border-radius: 12px; padding: 14px;
-      font-size: 14px; font-weight: 600; cursor: pointer;
-      font-family: 'Segoe UI', sans-serif;
-    }
-    .btn-appliquer {
-      flex: 2; background: #FF5C35; color: white;
-      border: none; border-radius: 12px; padding: 14px;
-      font-size: 14px; font-weight: 600; cursor: pointer;
-      font-family: 'Segoe UI', sans-serif;
-    }
-
-    /* MODAL PUBLIER */
-    .modal-pub {
-      background: white; border-radius: 20px 20px 0 0;
-      width: 100%; max-width: 500px;
-      padding: 20px 20px 40px;
-      max-height: 90vh; overflow-y: auto;
-    }
-    .modal-title-pub { font-size: 18px; font-weight: 700; margin-bottom: 16px; }
+    .modal-title { font-size: 18px; font-weight: 700; margin-bottom: 16px; }
     .form-group { margin-bottom: 12px; }
     .form-label { font-size: 12px; color: #999; margin-bottom: 4px; display: block; }
     .form-input {
@@ -254,6 +187,12 @@
       padding: 10px 12px; font-size: 14px; background: white; outline: none;
       font-family: 'Segoe UI', sans-serif;
     }
+    .photos-conseil {
+      background: #FFF0ED; border-radius: 10px;
+      padding: 10px 14px; margin-bottom: 10px;
+      font-size: 12px; color: #FF5C35; line-height: 1.6;
+    }
+    .photos-conseil strong { display: block; margin-bottom: 4px; font-size: 13px; }
     .photos-grid {
       display: grid; grid-template-columns: repeat(5, 1fr);
       gap: 6px; margin-bottom: 12px;
@@ -289,7 +228,6 @@
     }
     .photo-case.premiere { border-color: #FF5C35; }
     .photo-case.premiere .icone { color: #FF5C35; }
-    .photos-hint { font-size: 11px; color: #999; text-align: center; margin-bottom: 8px; }
     .upload-progress {
       display: none; text-align: center;
       font-size: 13px; color: #FF5C35; margin-top: 8px;
@@ -300,7 +238,56 @@
       font-size: 15px; font-weight: 600; cursor: pointer; margin-top: 6px;
     }
     .btn-publier:disabled { opacity: 0.6; cursor: not-allowed; }
-
+    .filtre-section { margin-bottom: 20px; }
+    .filtre-label {
+      font-size: 13px; font-weight: 700;
+      color: #1A1A1A; margin-bottom: 10px; display: block;
+    }
+    .prix-range { display: flex; gap: 10px; align-items: center; }
+    .prix-input {
+      flex: 1; border: 1.5px solid #eee;
+      border-radius: 10px; padding: 10px 12px;
+      font-size: 14px; outline: none;
+      font-family: 'Segoe UI', sans-serif;
+      text-align: center;
+    }
+    .prix-input:focus { border-color: #FF5C35; }
+    .prix-sep { color: #999; font-size: 14px; }
+    .chips { display: flex; gap: 8px; flex-wrap: wrap; }
+    .chip {
+      padding: 8px 14px; border-radius: 20px;
+      border: 1.5px solid #eee; background: white;
+      font-size: 12px; cursor: pointer;
+      font-family: 'Segoe UI', sans-serif;
+      transition: all 0.15s;
+    }
+    .chip.selected { background: #FF5C35; color: white; border-color: #FF5C35; }
+    .marques-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr);
+      gap: 6px; max-height: 200px; overflow-y: auto;
+      margin-top: 8px;
+    }
+    .marque-chip {
+      padding: 8px 6px; border-radius: 10px;
+      border: 1.5px solid #eee; background: white;
+      font-size: 11px; cursor: pointer; text-align: center;
+      font-family: 'Segoe UI', sans-serif;
+      transition: all 0.15s;
+    }
+    .marque-chip.selected { background: #FF5C35; color: white; border-color: #FF5C35; }
+    .filtre-actions { display: flex; gap: 10px; margin-top: 8px; }
+    .btn-reset {
+      flex: 1; background: #F0F0F0; color: #555;
+      border: none; border-radius: 12px; padding: 14px;
+      font-size: 14px; font-weight: 600; cursor: pointer;
+      font-family: 'Segoe UI', sans-serif;
+    }
+    .btn-appliquer {
+      flex: 2; background: #FF5C35; color: white;
+      border: none; border-radius: 12px; padding: 14px;
+      font-size: 14px; font-weight: 600; cursor: pointer;
+      font-family: 'Segoe UI', sans-serif;
+    }
     .toast {
       position: fixed; bottom: 90px; left: 50%;
       transform: translateX(-50%);
@@ -353,7 +340,7 @@
   <div class="search-bar">
     <div class="search-wrap">
       <span class="search-icon">🔍</span>
-      <input class="search-input" placeholder="Rechercher un article..."
+      <input class="search-input" placeholder="Rechercher un article, une marque..."
         oninput="rechercherAnnonces(this.value)" />
     </div>
     <button class="btn-filtre" id="btn-filtre" onclick="ouvrirModal('modal-filtres')">
@@ -398,6 +385,15 @@
       </div>
 
       <div class="filtre-section">
+        <label class="filtre-label">👗 Marque</label>
+        <input class="prix-input" id="filtre-marque" type="text"
+          placeholder="Tape ou choisis une marque..."
+          style="width:100%;text-align:left;padding:10px 14px;margin-bottom:8px;"
+          oninput="filtrerMarquesGrid(this.value)" />
+        <div class="marques-grid" id="marques-grid"></div>
+      </div>
+
+      <div class="filtre-section">
         <label class="filtre-label">🏷️ État de l'article</label>
         <div class="chips" id="chips-etat">
           <button class="chip" onclick="toggleChip(this,'etat','Neuf avec étiquette')">Neuf avec étiquette</button>
@@ -410,9 +406,9 @@
       <div class="filtre-section">
         <label class="filtre-label">🔄 Trier par</label>
         <div class="chips" id="chips-tri">
-          <button class="chip selected" onclick="toggleChipUnique(this,'tri','recent')">Plus récent</button>
-          <button class="chip" onclick="toggleChipUnique(this,'tri','prix-asc')">Prix croissant</button>
-          <button class="chip" onclick="toggleChipUnique(this,'tri','prix-desc')">Prix décroissant</button>
+          <button class="chip selected" onclick="toggleChipUnique(this,'recent')">Plus récent</button>
+          <button class="chip" onclick="toggleChipUnique(this,'prix-asc')">Prix croissant</button>
+          <button class="chip" onclick="toggleChipUnique(this,'prix-desc')">Prix décroissant</button>
         </div>
       </div>
 
@@ -432,13 +428,17 @@
 
   <!-- MODAL PUBLIER -->
   <div class="modal-overlay" id="modal-pub" onclick="fermerModal(event,'modal-pub')">
-    <div class="modal-pub modal">
+    <div class="modal">
       <div class="modal-handle"></div>
-      <div class="modal-title-pub">Publier une annonce</div>
+      <div class="modal-title">Publier une annonce</div>
 
       <div class="form-group">
         <label class="form-label">Photos (10 max)</label>
-        <p class="photos-hint">📷 Clique sur une case · ↻ Pour tourner · ✕ Pour supprimer</p>
+        <div class="photos-conseil">
+          <strong>📸 Conseils pour mieux vendre !</strong>
+          Pour rassurer les acheteurs et authentifier votre article, pensez à photographier :
+          📷 L'étiquette de la marque · 🏷️ Le numéro de série · 📋 Le ticket de caisse si disponible · 🔍 Les détails (coutures, logo, fermetures)
+        </div>
         <div class="photos-grid" id="photos-grid"></div>
         <div class="upload-progress" id="upload-progress">Upload en cours...</div>
       </div>
@@ -447,11 +447,144 @@
         <label class="form-label">Titre</label>
         <input class="form-input" id="titre" placeholder="Ex : Veste en jean taille M" />
       </div>
+
       <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Marque</label>
+          <input class="form-input" id="marque"
+            placeholder="Tape ou choisis une marque..."
+            list="marques-list" />
+          <datalist id="marques-list">
+            <!-- SPORT -->
+            <option value="Nike">
+            <option value="Adidas">
+            <option value="Puma">
+            <option value="Reebok">
+            <option value="New Balance">
+            <option value="Converse">
+            <option value="Vans">
+            <option value="Jordan">
+            <option value="Under Armour">
+            <option value="Asics">
+            <option value="Salomon">
+            <option value="The North Face">
+            <option value="Patagonia">
+            <option value="Columbia">
+            <option value="Mammut">
+            <option value="Arc'teryx">
+            <option value="Quiksilver">
+            <option value="Billabong">
+            <option value="Rip Curl">
+            <option value="O'Neill">
+            <option value="Oakley">
+            <!-- FAST FASHION -->
+            <option value="Zara">
+            <option value="H&M">
+            <option value="Mango">
+            <option value="Pull&Bear">
+            <option value="Bershka">
+            <option value="Stradivarius">
+            <option value="Massimo Dutti">
+            <option value="Uniqlo">
+            <option value="Primark">
+            <option value="Shein">
+            <option value="ASOS">
+            <option value="Monki">
+            <option value="Weekday">
+            <option value="& Other Stories">
+            <option value="COS">
+            <!-- PREMIUM -->
+            <option value="Lacoste">
+            <option value="Ralph Lauren">
+            <option value="Tommy Hilfiger">
+            <option value="Calvin Klein">
+            <option value="Levi's">
+            <option value="Wrangler">
+            <option value="Lee">
+            <option value="Diesel">
+            <option value="G-Star Raw">
+            <option value="Replay">
+            <option value="Guess">
+            <option value="Pepe Jeans">
+            <option value="Scotch & Soda">
+            <option value="Boss">
+            <option value="Armani Exchange">
+            <option value="Emporio Armani">
+            <option value="Karl Lagerfeld">
+            <option value="Michael Kors">
+            <option value="Coach">
+            <option value="Kate Spade">
+            <option value="Tory Burch">
+            <!-- STREETWEAR -->
+            <option value="Supreme">
+            <option value="Off-White">
+            <option value="Stone Island">
+            <option value="CP Company">
+            <option value="Carhartt WIP">
+            <option value="Stüssy">
+            <option value="Palace">
+            <option value="A Bathing Ape">
+            <option value="Kith">
+            <option value="Fear of God">
+            <option value="Essentials">
+            <option value="Represent">
+            <option value="Rhude">
+            <option value="Amiri">
+            <option value="Palm Angels">
+            <!-- LUXE -->
+            <option value="Gucci">
+            <option value="Louis Vuitton">
+            <option value="Chanel">
+            <option value="Dior">
+            <option value="Prada">
+            <option value="Balenciaga">
+            <option value="Bottega Veneta">
+            <option value="Saint Laurent">
+            <option value="Givenchy">
+            <option value="Valentino">
+            <option value="Versace">
+            <option value="Fendi">
+            <option value="Burberry">
+            <option value="Moncler">
+            <option value="Canada Goose">
+            <option value="Acne Studios">
+            <option value="Maison Margiela">
+            <option value="Rick Owens">
+            <option value="Comme des Garçons">
+            <option value="Issey Miyake">
+            <option value="Yohji Yamamoto">
+            <option value="Vivienne Westwood">
+            <option value="Alexander McQueen">
+            <option value="Stella McCartney">
+            <option value="Isabel Marant">
+            <option value="A.P.C.">
+            <option value="Jacquemus">
+            <option value="Ami Paris">
+            <option value="Sandro">
+            <option value="Maje">
+            <option value="IRO">
+            <option value="Ba&sh">
+            <!-- DÉCATHLON -->
+            <option value="Decathlon">
+            <option value="Quechua">
+            <option value="Kalenji">
+            <option value="Domyos">
+            <option value="Kipsta">
+            <option value="Tribord">
+            <!-- AUTRE -->
+            <option value="Sans marque">
+            <option value="Marque indépendante">
+            <option value="Fait main">
+            <option value="Vintage">
+          </datalist>
+        </div>
         <div class="form-group">
           <label class="form-label">Prix (€)</label>
           <input class="form-input" id="prix" type="number" placeholder="0" />
         </div>
+      </div>
+
+      <div class="form-row">
         <div class="form-group">
           <label class="form-label">Catégorie</label>
           <select class="form-select" id="categorie">
@@ -463,8 +596,6 @@
             <option>Chaussures</option>
           </select>
         </div>
-      </div>
-      <div class="form-row">
         <div class="form-group">
           <label class="form-label">État</label>
           <select class="form-select" id="etat">
@@ -474,16 +605,19 @@
             <option>Satisfaisant</option>
           </select>
         </div>
-        <div class="form-group">
-          <label class="form-label">Localisation</label>
-          <input class="form-input" id="localisation" placeholder="Ex : Toulouse" />
-        </div>
       </div>
+
+      <div class="form-group">
+        <label class="form-label">Localisation</label>
+        <input class="form-input" id="localisation" placeholder="Ex : Toulouse" />
+      </div>
+
       <div class="form-group">
         <label class="form-label">Description</label>
         <textarea class="form-input" id="description" rows="3"
-          placeholder="Décrivez votre article..."></textarea>
+          placeholder="Décrivez votre article, sa taille, ses défauts éventuels..."></textarea>
       </div>
+
       <button class="btn-publier" id="btn-publier" onclick="publierAnnonce()">
         Publier gratuitement →
       </button>
@@ -520,6 +654,40 @@
     const { createClient } = supabase
     const db = createClient(SUPABASE_URL, SUPABASE_KEY)
 
+    const TOUTES_LES_MARQUES = [
+      // Sport
+      'Nike', 'Adidas', 'Puma', 'Reebok', 'New Balance', 'Converse',
+      'Vans', 'Jordan', 'Under Armour', 'Asics', 'Salomon',
+      'The North Face', 'Patagonia', 'Columbia', 'Mammut', "Arc'teryx",
+      'Quiksilver', 'Billabong', 'Rip Curl', "O'Neill", 'Oakley',
+      // Fast Fashion
+      'Zara', 'H&M', 'Mango', 'Pull&Bear', 'Bershka', 'Stradivarius',
+      'Massimo Dutti', 'Uniqlo', 'Primark', 'Shein', 'ASOS',
+      'Monki', 'Weekday', '& Other Stories', 'COS',
+      // Premium
+      'Lacoste', 'Ralph Lauren', 'Tommy Hilfiger', 'Calvin Klein',
+      "Levi's", 'Wrangler', 'Lee', 'Diesel', 'G-Star Raw', 'Replay',
+      'Guess', 'Pepe Jeans', 'Scotch & Soda', 'Boss', 'Armani Exchange',
+      'Emporio Armani', 'Karl Lagerfeld', 'Michael Kors', 'Coach',
+      'Kate Spade', 'Tory Burch',
+      // Streetwear
+      'Supreme', 'Off-White', 'Stone Island', 'CP Company', 'Carhartt WIP',
+      'Stüssy', 'Palace', 'A Bathing Ape', 'Kith', 'Fear of God',
+      'Essentials', 'Represent', 'Rhude', 'Amiri', 'Palm Angels',
+      // Luxe
+      'Gucci', 'Louis Vuitton', 'Chanel', 'Dior', 'Prada', 'Balenciaga',
+      'Bottega Veneta', 'Saint Laurent', 'Givenchy', 'Valentino', 'Versace',
+      'Fendi', 'Burberry', 'Moncler', 'Canada Goose', 'Acne Studios',
+      'Maison Margiela', 'Rick Owens', 'Comme des Garçons', 'Issey Miyake',
+      'Yohji Yamamoto', 'Vivienne Westwood', 'Alexander McQueen',
+      'Stella McCartney', 'Isabel Marant', 'A.P.C.', 'Jacquemus',
+      'Ami Paris', 'Sandro', 'Maje', 'IRO', 'Ba&sh',
+      // Décathlon
+      'Decathlon', 'Quechua', 'Kalenji', 'Domyos', 'Kipsta', 'Tribord',
+      // Autre
+      'Sans marque', 'Marque indépendante', 'Fait main', 'Vintage'
+    ]
+
     const emojis = {
       'Femme': '👗', 'Homme': '👔', 'Enfant': '🧒',
       'Bibelots': '🏺', 'Sport': '⚽', 'Chaussures': '👟'
@@ -532,25 +700,48 @@
     let photos = new Array(MAX_PHOTOS).fill(null)
 
     let filtres = {
-      prixMin: null,
-      prixMax: null,
-      etats: [],
-      tri: 'recent',
-      localisation: ''
+      prixMin: null, prixMax: null,
+      etats: [], tri: 'recent',
+      localisation: '', marque: ''
+    }
+
+    function initMarquesGrid(recherche = '') {
+      const grid = document.getElementById('marques-grid')
+      const marquesFiltr = recherche
+        ? TOUTES_LES_MARQUES.filter(m => m.toLowerCase().includes(recherche.toLowerCase()))
+        : TOUTES_LES_MARQUES
+      grid.innerHTML = marquesFiltr.map(m => `
+        <button class="marque-chip ${filtres.marque === m ? 'selected' : ''}"
+          onclick="selectionnerMarque(this,'${m.replace(/'/g, "\\'")}')">${m}</button>
+      `).join('')
+    }
+
+    function filtrerMarquesGrid(val) {
+      initMarquesGrid(val)
+      filtres.marque = val
+    }
+
+    function selectionnerMarque(btn, marque) {
+      document.querySelectorAll('.marque-chip').forEach(c => c.classList.remove('selected'))
+      if (filtres.marque === marque) {
+        filtres.marque = ''
+        document.getElementById('filtre-marque').value = ''
+      } else {
+        btn.classList.add('selected')
+        filtres.marque = marque
+        document.getElementById('filtre-marque').value = marque
+      }
     }
 
     function toggleChip(btn, type, valeur) {
       btn.classList.toggle('selected')
       if (type === 'etat') {
-        if (btn.classList.contains('selected')) {
-          filtres.etats.push(valeur)
-        } else {
-          filtres.etats = filtres.etats.filter(e => e !== valeur)
-        }
+        if (btn.classList.contains('selected')) filtres.etats.push(valeur)
+        else filtres.etats = filtres.etats.filter(e => e !== valeur)
       }
     }
 
-    function toggleChipUnique(btn, type, valeur) {
+    function toggleChipUnique(btn, valeur) {
       document.querySelectorAll('#chips-tri .chip').forEach(c => c.classList.remove('selected'))
       btn.classList.add('selected')
       filtres.tri = valeur
@@ -560,6 +751,8 @@
       filtres.prixMin = document.getElementById('prix-min').value ? parseFloat(document.getElementById('prix-min').value) : null
       filtres.prixMax = document.getElementById('prix-max').value ? parseFloat(document.getElementById('prix-max').value) : null
       filtres.localisation = document.getElementById('filtre-loc').value.trim().toLowerCase()
+      const marqueInput = document.getElementById('filtre-marque').value.trim()
+      if (marqueInput) filtres.marque = marqueInput
       fermerModalDirect('modal-filtres')
       appliquerTousFiltres()
       mettreAjourBadge()
@@ -567,12 +760,14 @@
     }
 
     function resetFiltres() {
-      filtres = { prixMin: null, prixMax: null, etats: [], tri: 'recent', localisation: '' }
+      filtres = { prixMin: null, prixMax: null, etats: [], tri: 'recent', localisation: '', marque: '' }
       document.getElementById('prix-min').value = ''
       document.getElementById('prix-max').value = ''
       document.getElementById('filtre-loc').value = ''
+      document.getElementById('filtre-marque').value = ''
       document.querySelectorAll('.chip').forEach(c => c.classList.remove('selected'))
       document.querySelector('#chips-tri .chip').classList.add('selected')
+      initMarquesGrid()
       fermerModalDirect('modal-filtres')
       appliquerTousFiltres()
       mettreAjourBadge()
@@ -585,6 +780,7 @@
       if (filtres.prixMax) nb++
       if (filtres.etats.length) nb++
       if (filtres.localisation) nb++
+      if (filtres.marque) nb++
       const badge = document.getElementById('filtre-badge')
       const btn = document.getElementById('btn-filtre')
       if (nb > 0) {
@@ -600,6 +796,7 @@
     function afficherFiltresActifs() {
       const container = document.getElementById('filtres-actifs')
       const tags = []
+      if (filtres.marque) tags.push({ label: `👗 ${filtres.marque}`, key: 'marque' })
       if (filtres.prixMin) tags.push({ label: `Min ${filtres.prixMin} €`, key: 'prixMin' })
       if (filtres.prixMax) tags.push({ label: `Max ${filtres.prixMax} €`, key: 'prixMax' })
       filtres.etats.forEach(e => tags.push({ label: e, key: 'etat', val: e }))
@@ -620,6 +817,11 @@
     function supprimerFiltre(key, val) {
       if (key === 'prixMin') { filtres.prixMin = null; document.getElementById('prix-min').value = '' }
       if (key === 'prixMax') { filtres.prixMax = null; document.getElementById('prix-max').value = '' }
+      if (key === 'marque') {
+        filtres.marque = ''
+        document.getElementById('filtre-marque').value = ''
+        initMarquesGrid()
+      }
       if (key === 'etat') {
         filtres.etats = filtres.etats.filter(e => e !== val)
         document.querySelectorAll('#chips-etat .chip').forEach(c => {
@@ -634,13 +836,11 @@
 
     function appliquerTousFiltres() {
       let resultats = [...toutesLesAnnonces]
-
-      if (categorieActive !== 'tout') {
-        resultats = resultats.filter(a => a.categorie === categorieActive)
-      }
+      if (categorieActive !== 'tout') resultats = resultats.filter(a => a.categorie === categorieActive)
       if (rechercheActive) {
         resultats = resultats.filter(a =>
-          a.titre.toLowerCase().includes(rechercheActive.toLowerCase())
+          a.titre.toLowerCase().includes(rechercheActive.toLowerCase()) ||
+          (a.marque && a.marque.toLowerCase().includes(rechercheActive.toLowerCase()))
         )
       }
       if (filtres.prixMin) resultats = resultats.filter(a => a.prix >= filtres.prixMin)
@@ -651,9 +851,13 @@
           a.localisation && a.localisation.toLowerCase().includes(filtres.localisation)
         )
       }
+      if (filtres.marque) {
+        resultats = resultats.filter(a =>
+          a.marque && a.marque.toLowerCase().includes(filtres.marque.toLowerCase())
+        )
+      }
       if (filtres.tri === 'prix-asc') resultats.sort((a, b) => a.prix - b.prix)
       if (filtres.tri === 'prix-desc') resultats.sort((a, b) => b.prix - a.prix)
-
       afficherAnnonces(resultats)
     }
 
@@ -716,6 +920,7 @@
             ${a.etat ? `<span class="etat-badge ${etatClass[a.etat] || 'etat-satisfaisant'}">${a.etat}</span>` : ''}
           </div>
           <div class="article-info">
+            ${a.marque ? `<div class="article-marque">${a.marque}</div>` : ''}
             <div class="article-nom">${a.titre}</div>
             <div class="article-taille">${a.vendeur} · ${a.categorie}</div>
             <div class="article-bas">
@@ -868,6 +1073,7 @@
       const prix = document.getElementById('prix').value
       const categorie = document.getElementById('categorie').value
       const etat = document.getElementById('etat').value
+      const marque = document.getElementById('marque').value.trim()
       const localisation = document.getElementById('localisation').value.trim()
       const description = document.getElementById('description').value.trim()
       const btn = document.getElementById('btn-publier')
@@ -896,8 +1102,9 @@
       }
 
       const { error } = await db.from('Annonces').insert([{
-        titre, prix: parseFloat(prix), categorie, etat, localisation,
-        description, vendeur, emoji: emojis[categorie],
+        titre, prix: parseFloat(prix), categorie, etat,
+        marque: marque || null, localisation, description, vendeur,
+        emoji: emojis[categorie],
         photo: photosUrls[0] || null,
         photos: photosUrls.length > 0 ? photosUrls : null
       }])
@@ -913,6 +1120,7 @@
       document.getElementById('prix').value = ''
       document.getElementById('description').value = ''
       document.getElementById('localisation').value = ''
+      document.getElementById('marque').value = ''
       photos = new Array(MAX_PHOTOS).fill(null)
       initGrille()
       chargerAnnonces()
@@ -921,6 +1129,7 @@
     function ouvrirModal(id) {
       document.getElementById(id).classList.add('open')
       if (id === 'modal-pub') initGrille()
+      if (id === 'modal-filtres') initMarquesGrid()
     }
 
     function fermerModal(e, id) {
@@ -938,16 +1147,17 @@
       setTimeout(() => t.className = 'toast', 2600)
     }
 
-    verifierConnexion()
-    chargerAnnonces()
- if ('serviceWorker' in navigator) {
+    if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
         navigator.serviceWorker.register('/sw.js')
           .then(reg => console.log('SW enregistré'))
           .catch(err => console.log('SW erreur:', err))
       })
     }
- </script>
+
+    verifierConnexion()
+    chargerAnnonces()
+  </script>
 
 </body>
 </html>
