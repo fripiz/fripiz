@@ -1,4 +1,4 @@
-const CACHE_NAME = 'fripiz-v1'
+const CACHE_NAME = 'fripiz-v2'
 const urlsToCache = [
   '/',
   '/index.html',
