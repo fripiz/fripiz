@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Test FidélityApp</title>
+  <style>
+    * { box-sizing: border-box; }
+    body { font-family: system-ui, sans-serif; margin: 0; padding: 16px; background: #f6f6f4; color: #222; }
+    main { max-width: 860px; margin: 0 auto; }
+    h1 { font-size: 1.4rem; margin: 0 0 4px; }
+    .meta { font-size: .85rem; color: #666; margin-bottom: 24px; word-break: break-all; }
+    section { background: #fff; border: 1px solid #e2e2de; border-radius: 10px; padding: 16px; margin-bottom: 20px; }
+    section h2 { font-size: 1.1rem; margin: 0 0 4px; text-transform: capitalize; }
+    .status { font-size: .8rem; font-family: monospace; margin-bottom: 12px; }
+    .ok { color: #1a7f37; }
+    .err { color: #c62828; }
+    .item { display: flex; gap: 12px; padding: 10px 0; border-top: 1px solid #eee; }
+    .item:first-child { border-top: 0; }
+    .item img { width: 96px; height: 96px; object-fit: cover; border-radius: 6px; flex-shrink: 0; }
+    .item h3 { font-size: 1rem; margin: 0 0 4px; }
+    .item p { margin: 0 0 4px; font-size: .9rem; }
+    .item small { color: #666; }
+    .empty { color: #888; font-style: italic; }
+    details { margin-top: 12px; }
+    summary { cursor: pointer; font-size: .85rem; color: #555; }
+    pre { background: #f3f3f0; padding: 10px; border-radius: 6px; overflow-x: auto; font-size: .8rem; }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Test FidélityApp — API publique</h1>
+    <div class="meta" id="meta"></div>
+    <div id="blocks"></div>
+  </main>
+
+  <script>
+    const DEFAULT_MERCHANT_ID = '21f5f3cc-e1ca-4176-89f7-3cc76613269e'
+    const API_BASE = 'https://fidelityapp.fr/api/public/merchant'
+    const BLOCKS = ['boutique', 'nouveautes', 'agenda']
+
+    const params = new URLSearchParams(location.search)
+    const MERCHANT_ID = params.get('merchant') || DEFAULT_MERCHANT_ID
+
+    document.getElementById('meta').textContent = `merchantId : ${MERCHANT_ID}`
+
+    function esc(value) {
+      const div = document.createElement('div')
+      div.textContent = value == null ? '' : String(value)
+      return div.innerHTML
+    }
+
+    function formatDate(value) {
+      if (!value) return ''
+      const d = new Date(value)
+      return isNaN(d) ? value : d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })
+    }
+
+    // Rendu générique : on pioche les champs usuels s'ils existent
+    function renderItem(item) {
+      const title = item.title || item.name || item.nom || '(sans titre)'
+      const text = item.description || item.content || ''
+      const image = item.imageUrl || item.image || ''
+      const date = item.eventDate || item.publishedAt || item.date || ''
+      const price = item.price ?? item.prix
+      return `
+        <div class="item">
+          ${image ? `<img src="${esc(image)}" alt="" loading="lazy">` : ''}
+          <div>
+            <h3>${esc(title)}</h3>
+            ${text ? `<p>${esc(text)}</p>` : ''}
+            ${price != null ? `<p><strong>${esc(price)} €</strong></p>` : ''}
+            ${date ? `<small>${esc(formatDate(date))}</small>` : ''}
+          </div>
+        </div>`
+    }
+
+    async function fetchBlock(blockType) {
+      const url = `${API_BASE}/${encodeURIComponent(MERCHANT_ID)}/blocks/${blockType}`
+      const res = await fetch(url)
+      const text = await res.text()
+      let data
+      try { data = JSON.parse(text) } catch { data = text }
+      return { blockType, url, status: res.status, ok: res.ok, data }
+    }
+
+    function renderBlock(result) {
+      const section = document.createElement('section')
+      if (result.status === 'rejected') {
+        section.innerHTML = `
+          <h2>${esc(result.blockType)}</h2>
+          <div class="status err">Erreur réseau : ${esc(result.reason)}</div>`
+        return section
+      }
+      const { blockType, url, status, ok, data } = result.value
+      const items = ok && data && Array.isArray(data.items) ? data.items : null
+      section.innerHTML = `
+        <h2>${esc(blockType)}</h2>
+        <div class="status ${ok ? 'ok' : 'err'}">HTTP ${status} — ${esc(url)}</div>
+        ${items
+          ? (items.length ? items.map(renderItem).join('') : '<p class="empty">Aucun élément.</p>')
+          : `<p class="empty">${esc(data && data.error ? data.error : 'Réponse inattendue')}</p>`}
+        <details>
+          <summary>JSON brut</summary>
+          <pre>${esc(typeof data === 'string' ? data : JSON.stringify(data, null, 2))}</pre>
+        </details>`
+      return section
+    }
+
+    async function init() {
+      const container = document.getElementById('blocks')
+      container.innerHTML = '<p class="empty">Chargement…</p>'
+      const results = await Promise.allSettled(BLOCKS.map(fetchBlock))
+      container.innerHTML = ''
+      results.forEach((r, i) => {
+        container.appendChild(renderBlock({ ...r, blockType: BLOCKS[i] }))
+      })
+    }
+
+    init()
+  </script>
+</body>
+</html>
