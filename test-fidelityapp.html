@@ -7,30 +7,67 @@
   <style>
     * { box-sizing: border-box; }
     body { font-family: system-ui, sans-serif; margin: 0; padding: 16px; background: #f6f6f4; color: #222; }
-    main { max-width: 860px; margin: 0 auto; }
-    h1 { font-size: 1.4rem; margin: 0 0 4px; }
-    .meta { font-size: .85rem; color: #666; margin-bottom: 24px; word-break: break-all; }
-    section { background: #fff; border: 1px solid #e2e2de; border-radius: 10px; padding: 16px; margin-bottom: 20px; }
-    section h2 { font-size: 1.1rem; margin: 0 0 4px; text-transform: capitalize; }
-    .status { font-size: .8rem; font-family: monospace; margin-bottom: 12px; }
-    .ok { color: #1a7f37; }
-    .err { color: #c62828; }
+    main { max-width: 1040px; margin: 0 auto; }
+    h1 { font-size: 1.4rem; margin: 0 0 24px; }
+    section { margin-bottom: 20px; }
+    section h2 { font-size: 1.1rem; margin: 0 0 12px; text-transform: capitalize; }
+    .empty { color: #888; font-style: italic; }
+
+    /* Nouveautés / Agenda : rendu inchangé pour l'instant */
+    .block-card { background: #fff; border: 1px solid #e2e2de; border-radius: 10px; padding: 16px; }
     .item { display: flex; gap: 12px; padding: 10px 0; border-top: 1px solid #eee; }
     .item:first-child { border-top: 0; }
     .item img { width: 96px; height: 96px; object-fit: cover; border-radius: 6px; flex-shrink: 0; }
     .item h3 { font-size: 1rem; margin: 0 0 4px; }
     .item p { margin: 0 0 4px; font-size: .9rem; }
     .item small { color: #666; }
-    .empty { color: #888; font-style: italic; }
-    details { margin-top: 12px; }
-    summary { cursor: pointer; font-size: .85rem; color: #555; }
-    pre { background: #f3f3f0; padding: 10px; border-radius: 6px; overflow-x: auto; font-size: .8rem; }
+
+    /* Boutique : pas de cadre, le contenu se fond dans la page */
+    .boutique { margin: 48px 0; }
+    .boutique h2 { font-size: 1.6rem; text-align: center; text-transform: none; margin-bottom: 24px; }
+    .boutique h3.category { font-size: 1.15rem; text-align: center; margin: 32px 0 16px; }
+
+    /*
+      Grille produits : les cartes gardent toujours la même largeur, quel
+      que soit le nombre de produits. Pour centrer la dernière ligne
+      incomplète, chaque colonne visible occupe 2 pistes : 3 colonnes = 6
+      pistes. Un produit seul en fin de grille démarre alors à la piste 3,
+      et une paire en fin de grille démarre à la piste 2.
+    */
+    .product-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 340px);
+      justify-content: center;
+      gap: 24px;
+    }
+
+    /* 2 colonnes (4 pistes) */
+    @media (min-width: 560px) and (max-width: 859px) {
+      .product-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); justify-content: stretch; }
+      .product { grid-column: span 2; }
+      .product:last-child:nth-child(2n+1) { grid-column: 2 / span 2; }
+    }
+
+    /* 3 colonnes (6 pistes) */
+    @media (min-width: 860px) {
+      .product-grid { grid-template-columns: repeat(6, minmax(0, 1fr)); justify-content: stretch; }
+      .product { grid-column: span 2; }
+      .product:last-child:nth-child(3n+1) { grid-column: 3 / span 2; }
+      .product:nth-last-child(2):nth-child(3n+1) { grid-column: 2 / span 2; }
+    }
+
+    .product img { width: 100%; aspect-ratio: 1 / 1; object-fit: cover; border-radius: 8px; display: block; background: #e8e8e4; }
+    .product .img-wrap { position: relative; }
+    .product .badge { position: absolute; top: 10px; left: 10px; background: #c62828; color: #fff; font-size: .8rem; font-weight: 600; padding: 3px 8px; border-radius: 4px; }
+    .product h4 { font-size: 1.05rem; margin: 12px 0 4px; }
+    .product p { margin: 0 0 6px; font-size: .9rem; color: #555; }
+    .product .price { font-weight: 600; font-size: 1rem; color: #222; }
+    .product .price s { font-weight: 400; color: #888; margin-left: 6px; }
   </style>
 </head>
 <body>
   <main>
     <h1>Test FidélityApp — API publique</h1>
-    <div class="meta" id="meta"></div>
     <div id="blocks"></div>
   </main>
 
@@ -38,11 +75,10 @@
     const DEFAULT_MERCHANT_ID = '21f5f3cc-e1ca-4176-89f7-3cc76613269e'
     const API_BASE = 'https://fidelityapp.fr/api/public/merchant'
     const BLOCKS = ['boutique', 'nouveautes', 'agenda']
+    const OTHER_CATEGORY = 'Autres'
 
     const params = new URLSearchParams(location.search)
     const MERCHANT_ID = params.get('merchant') || DEFAULT_MERCHANT_ID
-
-    document.getElementById('meta').textContent = `merchantId : ${MERCHANT_ID}`
 
     function esc(value) {
       const div = document.createElement('div')
@@ -56,55 +92,123 @@
       return isNaN(d) ? value : d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })
     }
 
-    // Rendu générique : on pioche les champs usuels s'ils existent
+    const euro = new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' })
+
+    // ─── Nouveautés / Agenda ─────────────────────
+
     function renderItem(item) {
-      const title = item.title || item.name || item.nom || '(sans titre)'
+      const title = item.title || item.name || '(sans titre)'
       const text = item.description || item.content || ''
-      const image = item.imageUrl || item.image || ''
-      const date = item.eventDate || item.publishedAt || item.date || ''
-      const price = item.price ?? item.prix
+      const image = item.imageUrl || ''
+      const date = item.eventDate || item.publishedAt || ''
       return `
         <div class="item">
           ${image ? `<img src="${esc(image)}" alt="" loading="lazy">` : ''}
           <div>
             <h3>${esc(title)}</h3>
             ${text ? `<p>${esc(text)}</p>` : ''}
-            ${price != null ? `<p><strong>${esc(price)} €</strong></p>` : ''}
             ${date ? `<small>${esc(formatDate(date))}</small>` : ''}
           </div>
         </div>`
     }
 
+    function renderListBlock(blockType, items) {
+      return `
+        <section class="block-card">
+          <h2>${esc(blockType)}</h2>
+          ${items.length ? items.map(renderItem).join('') : '<p class="empty">Aucun élément.</p>'}
+        </section>`
+    }
+
+    // ─── Boutique ────────────────────────────────
+
+    // La promo n'est plus affichée une fois promoEndDate dépassée
+    function isPromoActive(p) {
+      if (p.originalPrice == null) return false
+      if (!p.promoEndDate) return true
+      return p.promoEndDate >= new Date().toISOString().slice(0, 10)
+    }
+
+    function renderProduct(p) {
+      const promo = isPromoActive(p)
+      return `
+        <article class="product">
+          <div class="img-wrap">
+            ${p.imageUrl ? `<img src="${esc(p.imageUrl)}" alt="${esc(p.name)}" loading="lazy">` : '<img alt="">'}
+            ${promo && p.promoLabel ? `<span class="badge">${esc(p.promoLabel)}</span>` : ''}
+          </div>
+          <h4>${esc(p.name)}</h4>
+          ${p.description ? `<p>${esc(p.description)}</p>` : ''}
+          ${p.price != null ? `
+            <div class="price">
+              ${esc(euro.format(p.price))}
+              ${promo ? `<s>${esc(euro.format(p.originalPrice))}</s>` : ''}
+            </div>` : ''}
+        </article>`
+    }
+
+    function renderGrid(products) {
+      return `<div class="product-grid">${products.map(renderProduct).join('')}</div>`
+    }
+
+    // Groupes dans l'ordre d'apparition (l'API trie par position), "Autres" en dernier
+    function groupByCategory(products) {
+      const groups = new Map()
+      for (const p of products) {
+        const key = p.category || OTHER_CATEGORY
+        if (!groups.has(key)) groups.set(key, [])
+        groups.get(key).push(p)
+      }
+      if (groups.has(OTHER_CATEGORY)) {
+        const others = groups.get(OTHER_CATEGORY)
+        groups.delete(OTHER_CATEGORY)
+        groups.set(OTHER_CATEGORY, others)
+      }
+      return groups
+    }
+
+    function renderBoutique(products) {
+      const featured = products.filter(p => p.featured === true)
+      const groups = groupByCategory(products)
+      return `
+        ${featured.length ? `
+          <section class="boutique">
+            <h2>Nos best-sellers</h2>
+            ${renderGrid(featured)}
+          </section>` : ''}
+        <section class="boutique">
+          <h2>Toute la boutique</h2>
+          ${products.length
+            ? [...groups].map(([category, items]) => `
+                <h3 class="category">${esc(category)}</h3>
+                ${renderGrid(items)}`).join('')
+            : '<p class="empty">Aucun produit.</p>'}
+        </section>`
+    }
+
+    // ─── Chargement ──────────────────────────────
+
     async function fetchBlock(blockType) {
       const url = `${API_BASE}/${encodeURIComponent(MERCHANT_ID)}/blocks/${blockType}`
       const res = await fetch(url)
-      const text = await res.text()
-      let data
-      try { data = JSON.parse(text) } catch { data = text }
-      return { blockType, url, status: res.status, ok: res.ok, data }
+      if (!res.ok) throw new Error(`HTTP ${res.status} sur ${url}`)
+      const data = await res.json()
+      return Array.isArray(data.items) ? data.items : []
     }
 
-    function renderBlock(result) {
-      const section = document.createElement('section')
+    function renderBlock(blockType, result) {
+      const wrapper = document.createElement('div')
       if (result.status === 'rejected') {
-        section.innerHTML = `
-          <h2>${esc(result.blockType)}</h2>
-          <div class="status err">Erreur réseau : ${esc(result.reason)}</div>`
-        return section
+        // Détail de l'erreur en console uniquement, rien de technique à l'écran
+        console.error(`[FidélityApp] bloc ${blockType} :`, result.reason)
+        wrapper.innerHTML = `<p class="empty">${esc(blockType)} : contenu indisponible.</p>`
+        return wrapper
       }
-      const { blockType, url, status, ok, data } = result.value
-      const items = ok && data && Array.isArray(data.items) ? data.items : null
-      section.innerHTML = `
-        <h2>${esc(blockType)}</h2>
-        <div class="status ${ok ? 'ok' : 'err'}">HTTP ${status} — ${esc(url)}</div>
-        ${items
-          ? (items.length ? items.map(renderItem).join('') : '<p class="empty">Aucun élément.</p>')
-          : `<p class="empty">${esc(data && data.error ? data.error : 'Réponse inattendue')}</p>`}
-        <details>
-          <summary>JSON brut</summary>
-          <pre>${esc(typeof data === 'string' ? data : JSON.stringify(data, null, 2))}</pre>
-        </details>`
-      return section
+      const items = result.value
+      wrapper.innerHTML = blockType === 'boutique'
+        ? renderBoutique(items)
+        : renderListBlock(blockType, items)
+      return wrapper
     }
 
     async function init() {
@@ -112,9 +216,7 @@
       container.innerHTML = '<p class="empty">Chargement…</p>'
       const results = await Promise.allSettled(BLOCKS.map(fetchBlock))
       container.innerHTML = ''
-      results.forEach((r, i) => {
-        container.appendChild(renderBlock({ ...r, blockType: BLOCKS[i] }))
-      })
+      results.forEach((r, i) => container.appendChild(renderBlock(BLOCKS[i], r)))
     }
 
     init()
